@@ -1,64 +1,155 @@
 # BeaconLink
 
-> **A modern, runtime-independent platform for orchestrating applications and infrastructure across distributed environments.**
+> A modern, secure, distributed application deployment and infrastructure management platform.
 
-BeaconLink is an enterprise platform for deploying, managing, and operating workloads across heterogeneous infrastructure through a unified control plane. It provides declarative deployment, continuous reconciliation, capability-based scheduling, Zero Trust security, and an extensible plugin architecture while remaining independent of any specific runtime or infrastructure provider.
+![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue)
+
+---
+
+## Overview
+
+BeaconLink is an open-source distributed platform for securely deploying, managing, and monitoring workloads across multiple machines.
+
+It provides a unified control plane for infrastructure management while abstracting the underlying execution runtime. BeaconLink is designed around modular components, secure communication, declarative deployments, and operational simplicity.
+
+The platform is built using Go for backend services and React for the web console, following a documentation-first engineering process and modern cloud-native design principles.
+
+---
+
+# Vision
+
+BeaconLink aims to provide:
+
+- Secure infrastructure management
+- Declarative application deployments
+- Runtime abstraction
+- Distributed communication
+- High observability
+- Production-ready operations
+- Extensible architecture
+- Excellent developer experience
+
+---
+
+# Core Components
+
+BeaconLink consists of several independent services.
+
+| Component             | Description                                  |
+| --------------------- | -------------------------------------------- |
+| **Beacon CLI**        | Command-line management tool                 |
+| **API Server**        | REST and WebSocket management API            |
+| **Relay**             | Distributed communication hub                |
+| **Agent**             | Host-side execution service                  |
+| **Deployment Engine** | Declarative orchestration engine             |
+| **Runtime Layer**     | Runtime abstraction (Docker, Podman, Native) |
+| **Beacon Console**    | Web-based administration interface           |
+
+---
+
+# Architecture
+
+```text
+                   Users
+                     │
+                     ▼
+               Beacon Console
+                     │
+                     ▼
+                API Server
+                     │
+                     ▼
+                  Relay
+                     │
+        ┌────────────┴────────────┐
+        ▼                         ▼
+      Agent                     Agent
+        │                         │
+        ▼                         ▼
+   Runtime Layer             Runtime Layer
+        │                         │
+        ▼                         ▼
+    Workloads                 Workloads
+```
 
 ---
 
 # Key Features
 
-- Runtime Independent architecture
-- BeaconLink Control Plane
-- BeaconLink Agent
-- Relay Network
-- Runtime Manager
-- Runtime Adapter framework
-- Deployment Planner
-- Distributed Scheduler
-- Workflow Engine
-- Policy Engine
-- Inventory Service
-- Event Streaming Platform
-- Plugin Framework
-- Continuous Reconciliation
-- Desired State management
-- Immutable Revisions
-- Capability-Based Scheduling
-- Zero Trust security
-- Multi-site management
-- High Availability architecture
+## Infrastructure
+
+- Distributed architecture
+- Secure communication
+- Runtime abstraction
+- Declarative deployments
+- Health monitoring
+- Event-driven design
+
+## Security
+
+- Mutual TLS
+- JWT authentication
+- RBAC
+- Certificate management
+- Audit logging
+- Secure defaults
+
+## Observability
+
+- Structured logging
+- Prometheus metrics
+- OpenTelemetry
+- Health endpoints
+- Build metadata
+
+## Developer Experience
+
+- Go monorepo
+- Documentation-first workflow
+- CI/CD
+- Strong testing practices
+- Semantic versioning
 
 ---
 
-# Architecture Overview
+# Technology Stack
 
-```
-                  +---------------------------+
-                  |  BeaconLink Control Plane |
-                  +---------------------------+
-                      |    |    |    |    |
-        ----------------------------------------------------
-        |         |          |          |         |         |
-   Inventory  Workflow   Scheduler   Policy   Runtime   Events
-    Service     Engine                Engine   Manager  Platform
-        |
-        |
-   -------------------------------
-   |        Relay Network        |
-   -------------------------------
-      |          |           |
-  +--------+ +--------+ +--------+
-  | Agent  | | Agent  | | Agent  |
-  +--------+ +--------+ +--------+
-      |          |           |
-   Runtime    Runtime     Runtime
-   Adapter    Adapter     Adapter
-      |          |           |
- Kubernetes  Docker    Virtual Machines
- Nomad       Podman    Bare Metal
- Edge        Custom    Cloud
-```
+## Backend
+
+- Go
+- Chi
+- PostgreSQL
+- Redis
+- sqlc
+- Cobra
+- slog
+- OpenTelemetry
+- Prometheus
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Zustand
+- TanStack Query
+
+## Runtime
+
+- Docker
+- Podman
+- Native Processes
+
+## Tooling
+
+- GitHub Actions
+- GoReleaser
+- golangci-lint
+- Go Testing
 
 ---
 
@@ -66,21 +157,37 @@ BeaconLink is an enterprise platform for deploying, managing, and operating work
 
 ```
 .
-├── 📁 agent
 ├── 📁 api
-├── 📁 architecture
-│   ├── 📁 decisions
-│   ├── 📁 flowcharts
-│   ├── 📁 sequence-diagrams
-│   ├── 📁 threat-models
-│   └── 📝 README.md
-├── 📁 branding
-│   ├── 📁 logo
-│   ├── 📝 colors.md
-│   └── 📝 typography.md
-├── 📁 cli
-├── 📁 console
-├── 📁 dns
+├── 📁 cmd
+│   ├── 📁 agent
+│   ├── 📁 api
+│   ├── 📁 beacon
+│   ├── 📁 installer
+│   └── 📁 relay
+├── 📁 configs
+├── 📁 deployments
+├── 📁 docs
+├── 📁 examples
+├── 📁 internal
+├── 📁 pkg
+├── 📁 scripts
+├── 📁 sdk
+├── 📁 test
+├── 📁 web
+├── ⚙️ .gitignore
+├── 📄 LICENSE
+├── 📄 NOTICE
+├── 📝 README.md
+└── 📄 go.mod
+```
+
+---
+
+# Documentation
+
+The project documentation is organized into dedicated sections.
+
+```text
 ├── 📁 docs
 │   ├── 📁 00-foundation
 │   ├── 📁 01-architecture
@@ -95,6 +202,7 @@ BeaconLink is an enterprise platform for deploying, managing, and operating work
 │   ├── 📁 10-data
 │   ├── 📁 11-quality
 │   ├── 📁 12-development
+│   ├── 📁 13-roadmap
 │   ├── 📁 ADR
 │   ├── 📁 RFC
 │   ├── 📁 diagrams
@@ -107,277 +215,201 @@ BeaconLink is an enterprise platform for deploying, managing, and operating work
 │   │   ├── 📁 state
 │   │   ├── 📁 ui
 │   │   └── 📝 README.md
-│   ├── 📝 BeaconLink_MANIFESTO.md
+│   ├── 📝 BEACONLINK_MANIFESTO.md
 │   ├── 📝 GLOSSARY.md
 │   ├── 📝 INDEX.md
 │   └── 📝 README.md
-├── 📁 examples
-├── 📁 installer
-├── 📁 protocol
-├── 📁 relay
-├── 📁 roadmap
-├── 📁 sdk
-├── 📁 security
-├── 📁 tests
-├── ⚙️ .gitignore
-├── 🖼️ Components.png
-├── 📄 LICENSE
-└── 📝 README.md
 ```
 
 ---
 
-# Documentation
+# Current Roadmap
 
-The documentation is organized into focused architectural domains.
+| Version | Status               |
+| ------- | -------------------- |
+| v0.0.1  | Foundation           |
+| v0.1.0  | BeaconLink Protocol  |
+| v0.2.0  | Relay                |
+| v0.3.0  | Agent                |
+| v0.4.0  | API Server           |
+| v0.5.0  | Beacon Console       |
+| v0.6.0  | Deployment Engine    |
+| v0.7.0  | Runtime Abstraction  |
+| v0.8.0  | Security & Identity  |
+| v0.9.0  | Production Readiness |
+| v1.0.0  | Stable Release       |
 
-| Directory       | Purpose                                 |
-| --------------- | --------------------------------------- |
-| `architecture/` | High-level platform architecture        |
-| `database/`     | Data model and schemas                  |
-| `deployment/`   | Deployment lifecycle and reconciliation |
-| `networking/`   | Relay Network and connectivity          |
-| `security/`     | Zero Trust architecture and governance  |
-| `sequence/`     | Runtime interaction sequences           |
-| `state/`        | Platform state machines                 |
-| `ui/`           | User interface architecture             |
-| `diagrams/`     | Mermaid architecture diagrams           |
+Detailed planning is available in:
 
----
-
-# Core Components
-
-## BeaconLink Control Plane
-
-Central orchestration platform responsible for:
-
-- Desired State management
-- Deployment orchestration
-- Scheduling
-- Workflow execution
-- Policy enforcement
-- Inventory management
-- Event processing
-- System reconciliation
+```text
+docs/13-roadmap/
+```
 
 ---
 
-## BeaconLink Agent
+# Getting Started
 
-Runs on managed infrastructure and is responsible for:
+## Requirements
 
-- Receiving Desired State
-- Executing workloads
-- Reporting health
-- Runtime interaction
-- Secure communication
-- Continuous reconciliation
+- Go 1.24+
+- Git
+- Node.js (for Console)
+- Docker or Podman (optional)
 
 ---
 
-## Relay Network
+## Clone
 
-Provides secure communication between the BeaconLink Control Plane and distributed BeaconLink Agents.
+```bash
+git clone https://github.com/<your-username>/beaconlink.git
 
-Capabilities include:
-
-- mTLS connectivity
-- Multi-region communication
-- High availability
-- Connection multiplexing
-- Secure routing
-- Network failover
+cd beaconlink
+```
 
 ---
 
-## Runtime Manager
+## Build
 
-Provides a unified abstraction over multiple execution environments through Runtime Adapters.
-
-Example runtimes include:
-
-- Kubernetes
-- Docker
-- Podman
-- Nomad
-- Virtual Machines
-- Bare Metal
-- Edge devices
-- Custom runtimes
+```bash
+go build ./...
+```
 
 ---
 
-## Workflow Engine
+## Test
 
-Responsible for orchestrating long-running platform operations including:
-
-- Deployments
-- Rollbacks
-- Upgrades
-- Maintenance workflows
-- Policy rollout
-- Infrastructure automation
+```bash
+go test ./...
+```
 
 ---
 
-## Deployment Planner
+## Run
 
-Generates immutable deployment plans based on:
-
-- Desired State
-- Policies
-- Infrastructure capabilities
-- Scheduling constraints
-- Runtime compatibility
+```bash
+go run ./cmd/beacon version
+```
 
 ---
 
-## Distributed Scheduler
+# Development
 
-Schedules workloads using:
+BeaconLink follows a documentation-first workflow.
 
-- Capability-Based Scheduling
-- Resource awareness
-- Affinity rules
-- Placement constraints
-- Multi-site optimization
+The general development process is:
 
----
+1. Architecture
+2. ADR (if required)
+3. RFC (if required)
+4. Documentation
+5. Implementation
+6. Testing
+7. Review
+8. Merge
 
-## Policy Engine
-
-Implements governance through:
-
-- Zero Trust authorization
-- Admission policies
-- Runtime validation
-- Security enforcement
-- Compliance evaluation
+No feature should be implemented without corresponding documentation.
 
 ---
 
-## Event Streaming Platform
+# Coding Standards
 
-Provides real-time event distribution for:
+The project follows:
 
-- Deployments
-- Agents
-- Workflows
-- Policies
-- Runtime events
-- Audit events
-- Monitoring
-
----
-
-## Inventory Service
-
-Maintains authoritative platform state including:
-
-- Sites
-- Agents
-- Deployments
-- Resources
-- Runtime capabilities
-- Infrastructure metadata
+- Go formatting (`go fmt`)
+- `go vet`
+- Static analysis
+- Unit testing
+- Code review
+- Semantic Versioning
+- Conventional Git workflow
 
 ---
 
-## Plugin Framework
+# Testing
 
-Extends BeaconLink through pluggable modules including:
+Testing includes:
 
-- Runtime Adapters
-- Authentication providers
-- Storage drivers
-- Network integrations
-- Observability integrations
-- Deployment extensions
-
----
-
-# Architectural Principles
-
-BeaconLink follows several core design principles.
-
-## Runtime Independent
-
-Infrastructure providers and runtimes are abstracted behind Runtime Adapters.
-
-## Declarative Operations
-
-Desired State defines the intended platform configuration rather than imperative execution.
-
-## Continuous Reconciliation
-
-The platform continuously compares observed state with Desired State and reconciles drift automatically.
-
-## Immutable Revisions
-
-Every deployment, workflow, policy, and configuration change produces an immutable revision.
-
-## Event-Driven Architecture
-
-Platform services communicate using an Event Streaming Platform to enable loose coupling and scalability.
-
-## Zero Trust
-
-Every component authenticates and authorizes every communication using strong identity and policy enforcement.
-
-## Capability-Based Scheduling
-
-Scheduling decisions are based on runtime capabilities rather than infrastructure-specific assumptions.
+- Unit tests
+- Integration tests
+- API tests
+- Runtime tests
+- Protocol tests
+- End-to-end tests
+- Benchmarks
 
 ---
 
-# Documentation Statistics
+# Contributing
 
-| Section       |  Files |
-| ------------- | -----: |
-| Architecture  |     10 |
-| Database      |      8 |
-| Deployment    |      9 |
-| Networking    |      9 |
-| Security      |      8 |
-| Sequence      |     10 |
-| State         |      7 |
-| UI            |      9 |
-| Documentation |      2 |
-| **Total**     | **72** |
+Contributions are welcome.
+
+Before submitting changes:
+
+1. Read `CONTRIBUTING.md`
+2. Review the architecture documentation
+3. Follow the development workflow
+4. Ensure all tests pass
+5. Update documentation where applicable
 
 ---
 
-# Intended Audience
+# Security
 
-This repository is intended for:
+Please report security vulnerabilities responsibly.
 
-- Platform Architects
-- Software Architects
-- Infrastructure Engineers
-- Platform Engineers
-- DevOps Engineers
-- Site Reliability Engineers
-- Security Engineers
-- Enterprise Architects
-- Technical Writers
-- Operations Teams
+See:
 
----
+```text
+SECURITY.md
+```
 
-# Technologies
-
-- Mermaid
-- Markdown
-- Event-Driven Architecture
-- Zero Trust
-- Runtime Abstraction
-- Distributed Systems
-- Workflow Orchestration
-- Infrastructure as Code
-- Declarative Configuration
+Do not disclose security issues publicly before they have been reviewed.
 
 ---
 
 # License
 
-This repository contains the reference architecture and technical documentation for the BeaconLink platform, including architectural documentation, system design, workflow definitions, state machines, deployment models, networking architecture, security architecture, and user interface documentation.
+BeaconLink is licensed under the Apache License 2.0.
+
+See:
+
+```text
+LICENSE
+```
+
+---
+
+# Project Status
+
+BeaconLink is currently under active development.
+
+The implementation roadmap is documented in:
+
+```text
+docs/13-roadmap/
+```
+
+Until the first stable release, APIs, protocols, and internal packages may evolve as implementation progresses.
+
+---
+
+# Design Principles
+
+BeaconLink is built around several engineering principles:
+
+- Simplicity over complexity
+- Security by default
+- Documentation first
+- Stable interfaces
+- Modular architecture
+- Explicit dependencies
+- Operational visibility
+- Testability
+- Maintainability
+- Extensibility
+
+---
+
+# Acknowledgements
+
+BeaconLink is inspired by modern distributed systems, cloud-native engineering practices, and the open-source infrastructure ecosystem. While influenced by established architectural patterns, it is designed as an independent platform with its own implementation, protocol, and operational model.

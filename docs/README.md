@@ -136,30 +136,37 @@ BeaconLink consists of several major platform components.
 # Repository Structure
 
 ```
-docs/
-│
-├── README.md
-├── INDEX.md
-├── GLOSSARY.md
-├── BeaconLink_MANIFESTO.md
-│
-├── 00-foundation/
-├── 01-architecture/
-├── 02-networking/
-├── 03-protocol/
-├── 04-security/
-├── 05-agent/
-├── 06-relay/
-├── 07-console/
-├── 08-deployment/
-├── 09-api/
-├── 10-data/
-├── 11-quality/
-├── 12-development/
-│
-├── ADR/
-├── RFC/
-└── diagrams/
+├── 📁 docs
+│   ├── 📁 00-foundation
+│   ├── 📁 01-architecture
+│   ├── 📁 02-networking
+│   ├── 📁 03-protocol
+│   ├── 📁 04-security
+│   ├── 📁 05-agent
+│   ├── 📁 06-relay
+│   ├── 📁 07-console
+│   ├── 📁 08-deployment
+│   ├── 📁 09-api
+│   ├── 📁 10-data
+│   ├── 📁 11-quality
+│   ├── 📁 12-development
+│   ├── 📁 13-roadmap
+│   ├── 📁 ADR
+│   ├── 📁 RFC
+│   ├── 📁 diagrams
+│   │   ├── 📁 architecture
+│   │   ├── 📁 database
+│   │   ├── 📁 deployment
+│   │   ├── 📁 networking
+│   │   ├── 📁 security
+│   │   ├── 📁 sequence
+│   │   ├── 📁 state
+│   │   ├── 📁 ui
+│   │   └── 📝 README.md
+│   ├── 📝 BEACONLINK_MANIFESTO.md
+│   ├── 📝 GLOSSARY.md
+│   ├── 📝 INDEX.md
+│   └── 📝 README.md
 ```
 
 ---

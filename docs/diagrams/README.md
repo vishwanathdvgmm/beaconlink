@@ -11,16 +11,16 @@ All diagrams are designed to be rendered by Mermaid-compatible documentation pla
 # Directory Structure
 
 ```
-diagrams/
-├── architecture/
-├── database/
-├── deployment/
-├── networking/
-├── security/
-├── sequence/
-├── state/
-├── ui/
-└── README.md
+├── 📁 diagrams
+│   ├── 📁 architecture
+│   ├── 📁 database
+│   ├── 📁 deployment
+│   ├── 📁 networking
+│   ├── 📁 security
+│   ├── 📁 sequence
+│   ├── 📁 state
+│   ├── 📁 ui
+│   └── 📝 README.md
 ```
 
 ---
