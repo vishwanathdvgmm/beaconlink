@@ -1,0 +1,241 @@
+---
+title: BeaconLink Deployment View Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> DeploymentUI
+
+%% =====================================================
+%% Deployment View
+%% =====================================================
+
+subgraph DeploymentUI["Deployment Details"]
+
+direction TB
+
+Header["Deployment Details
+────────────────────────
+Deployment • Revision • Environment • Status"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Refresh["Refresh"]
+
+Redeploy["Redeploy"]
+
+Rollback["Rollback"]
+
+Scale["Scale"]
+
+Pause["Pause"]
+
+Resume["Resume"]
+
+Delete["Delete"]
+
+Export["Export Manifest"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Deployment Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+OverviewNav["Overview"]
+
+ResourcesNav["Resources"]
+
+EventsNav["Events"]
+
+WorkflowsNav["Workflows"]
+
+PoliciesNav["Policies"]
+
+HistoryNav["Revision History"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph DeploymentDetails["Deployment Overview"]
+
+direction TB
+
+Summary["Summary
+• Deployment ID
+• Immutable Revision
+• Namespace
+• Runtime"]
+
+Health["Deployment Health
+• Status
+• Availability
+• Ready Replicas
+• Desired Replicas"]
+
+Strategy["Deployment Strategy
+• Rolling
+• Canary
+• Blue/Green
+• Recreate"]
+
+Scheduling["Scheduling
+• Target Sites
+• Target Agents
+• Placement Policy"]
+
+DesiredState["Desired State
+• Current Revision
+• Drift Status
+• Reconciliation"]
+
+end
+
+%% =====================================================
+
+subgraph RuntimeStatus["Runtime Execution"]
+
+direction TB
+
+Resources["Managed Resources"]
+
+Pods["Running Workloads"]
+
+Jobs["Associated Jobs"]
+
+Workflows["Workflow Execution"]
+
+Secrets["Resolved Secrets"]
+
+Networking["Service & Network"]
+
+Volumes["Persistent Storage"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Operational Insights"]
+
+direction LR
+
+Timeline["Deployment Timeline"]
+
+Metrics["Runtime Metrics"]
+
+EventsPanel["Live Events"]
+
+Logs["Streaming Logs"]
+
+AuditPanel["Audit History"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+Inventory["Inventory Service"]
+
+WorkflowEngine["Workflow Engine"]
+
+Planner["Deployment Planner"]
+
+Scheduler["Distributed Scheduler"]
+
+RuntimeManager["Runtime Manager"]
+
+Policy["Policy Engine"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+DeploymentDetails --> Inventory
+DeploymentDetails --> Planner
+DeploymentDetails --> Scheduler
+DeploymentDetails --> Policy
+
+RuntimeStatus --> RuntimeManager
+RuntimeStatus --> WorkflowEngine
+
+BottomPanels --> Monitoring
+BottomPanels --> EventsSvc
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Operations
+%% =====================================================
+
+Redeploy --> WorkflowEngine
+
+Rollback --> Planner
+
+Scale --> RuntimeManager
+
+Pause --> WorkflowEngine
+
+Resume --> WorkflowEngine
+
+Delete --> WorkflowEngine
+
+Export --> Inventory
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+WorkflowEngine -. Workflow Progress .-> Workflows
+
+RuntimeManager -. Runtime Status .-> Pods
+
+Inventory -. Desired State Updates .-> DesiredState
+
+Scheduler -. Placement Changes .-> Scheduling
+
+Monitoring -. Metrics Stream .-> Metrics
+
+EventsSvc -. Live Event Stream .-> EventsPanel
+
+AuditSvc -. Audit Events .-> AuditPanel
+
+Monitoring -. Log Stream .-> Logs
+
+EventsSvc -. Deployment Timeline .-> Timeline

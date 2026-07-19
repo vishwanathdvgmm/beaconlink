@@ -1,0 +1,165 @@
+---
+title: BeaconLink System Overview
+---
+
+flowchart TB
+
+    %% =========================
+    %% Users
+    %% =========================
+
+    Admin["Platform Administrator"]
+    DevOps["DevOps Engineer"]
+    APIClient["API Client / CLI"]
+
+    %% =========================
+    %% Console Layer
+    %% =========================
+
+    subgraph Console["Presentation Layer"]
+
+        Web["BeaconLink Console"]
+        REST["REST API"]
+        WS["WebSocket API"]
+
+    end
+
+    %% =========================
+    %% Control Plane
+    %% =========================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Gateway["API Gateway"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+
+        EventBus["Event Streaming Platform"]
+
+        Secret["Secret Management"]
+        Plugin["Plugin Manager"]
+
+        Metadata["Metadata Store"]
+        Audit["Audit Log"]
+
+    end
+
+    %% =========================
+    %% Relay Layer
+    %% =========================
+
+    subgraph RelayLayer["Relay Network"]
+
+        Relay1["Relay A"]
+        Relay2["Relay B"]
+        Relay3["Relay C"]
+
+    end
+
+    %% =========================
+    %% Managed Infrastructure
+    %% =========================
+
+    subgraph Site1["Site Alpha"]
+
+        Agent1["BeaconLink Agent"]
+
+        Runtime1["Container Runtime"]
+        Runtime2["Virtual Machine Runtime"]
+
+    end
+
+    subgraph Site2["Site Beta"]
+
+        Agent2["BeaconLink Agent"]
+
+        Runtime3["Kubernetes Runtime"]
+
+    end
+
+    subgraph Site3["Edge Site"]
+
+        Agent3["BeaconLink Agent"]
+
+        Runtime4["WebAssembly Runtime"]
+
+    end
+
+    %% =========================
+    %% User Connections
+    %% =========================
+
+    Admin --> Web
+    DevOps --> Web
+    APIClient --> REST
+
+    Web --> Gateway
+    REST --> Gateway
+    WS --> Gateway
+
+    %% =========================
+    %% Internal Services
+    %% =========================
+
+    Gateway --> Deploy
+    Gateway --> Workflow
+    Gateway --> Policy
+    Gateway --> Scheduler
+
+    Deploy --> EventBus
+    Workflow --> EventBus
+    Policy --> EventBus
+    Scheduler --> EventBus
+
+    Deploy --> Secret
+    Deploy --> Plugin
+
+    Deploy --> Metadata
+    Workflow --> Metadata
+    Policy --> Metadata
+
+    EventBus --> Audit
+
+    %% =========================
+    %% Relay Connectivity
+    %% =========================
+
+    EventBus --> Relay1
+    EventBus --> Relay2
+    EventBus --> Relay3
+
+    Relay1 <-->|Persistent TLS| Agent1
+    Relay2 <-->|Persistent TLS| Agent2
+    Relay3 <-->|Persistent TLS| Agent3
+
+    %% =========================
+    %% Runtime Management
+    %% =========================
+
+    Agent1 --> Runtime1
+    Agent1 --> Runtime2
+
+    Agent2 --> Runtime3
+
+    Agent3 --> Runtime4
+
+    %% =========================
+    %% Styling
+    %% =========================
+
+    classDef user fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef ui fill:#FFF8E1,stroke:#F9A825,color:#000;
+    classDef control fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef relay fill:#F3E5F5,stroke:#7B1FA2,color:#000;
+    classDef agent fill:#FCE4EC,stroke:#AD1457,color:#000;
+    classDef runtime fill:#ECEFF1,stroke:#455A64,color:#000;
+
+    class Admin,DevOps,APIClient user
+    class Web,REST,WS ui
+    class Gateway,Deploy,Workflow,Policy,Scheduler,EventBus,Secret,Plugin,Metadata,Audit control
+    class Relay1,Relay2,Relay3 relay
+    class Agent1,Agent2,Agent3 agent
+    class Runtime1,Runtime2,Runtime3,Runtime4 runtime

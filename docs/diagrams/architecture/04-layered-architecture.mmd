@@ -1,0 +1,184 @@
+---
+title: BeaconLink Layered Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Layer 1
+    %% =====================================================
+
+    subgraph L1["Presentation Layer"]
+
+        Console["BeaconLink Console"]
+        REST["REST API"]
+        WS["WebSocket API"]
+        CLI["Command Line Interface"]
+
+    end
+
+    %% =====================================================
+    %% Layer 2
+    %% =====================================================
+
+    subgraph L2["Gateway Layer"]
+
+        Gateway["API Gateway"]
+
+    end
+
+    %% =====================================================
+    %% Layer 3
+    %% =====================================================
+
+    subgraph L3["Application Layer"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+        Plugin["Plugin Manager"]
+        Secret["Secret Management"]
+
+    end
+
+    %% =====================================================
+    %% Layer 4
+    %% =====================================================
+
+    subgraph L4["Platform Services Layer"]
+
+        Events["Event Streaming Platform"]
+        Metadata["Metadata Store"]
+        Config["Configuration Store"]
+        Audit["Audit Log"]
+        Observability["Observability"]
+        Cache["Distributed Cache"]
+
+    end
+
+    %% =====================================================
+    %% Layer 5
+    %% =====================================================
+
+    subgraph L5["Communication Layer"]
+
+        Relay["BeaconLink Relay Cluster"]
+        Protocol["BeaconLink Protocol"]
+
+    end
+
+    %% =====================================================
+    %% Layer 6
+    %% =====================================================
+
+    subgraph L6["Execution Layer"]
+
+        Agent["BeaconLink Agent"]
+
+        RuntimeMgr["Runtime Manager"]
+        Executor["Deployment Executor"]
+        Inventory["Inventory Service"]
+        Health["Health Monitor"]
+
+    end
+
+    %% =====================================================
+    %% Layer 7
+    %% =====================================================
+
+    subgraph L7["Infrastructure Layer"]
+
+        Containers["Containers"]
+        Kubernetes["Kubernetes"]
+        VM["Virtual Machines"]
+        WASM["WebAssembly"]
+        BareMetal["Bare Metal"]
+
+    end
+
+    %% =====================================================
+    %% Layer Dependencies
+    %% =====================================================
+
+    Console --> Gateway
+    REST --> Gateway
+    WS --> Gateway
+    CLI --> Gateway
+
+    Gateway --> Deploy
+    Gateway --> Workflow
+    Gateway --> Policy
+    Gateway --> Scheduler
+    Gateway --> Plugin
+    Gateway --> Secret
+
+    Deploy --> Events
+    Workflow --> Events
+    Policy --> Events
+    Scheduler --> Events
+    Plugin --> Events
+    Secret --> Events
+
+    Deploy --> Metadata
+    Workflow --> Metadata
+    Policy --> Metadata
+
+    Deploy --> Config
+    Workflow --> Config
+
+    Events --> Audit
+    Events --> Observability
+    Events --> Cache
+
+    Events --> Relay
+    Relay --> Protocol
+    Protocol <-->|Persistent TLS| Agent
+
+    Agent --> RuntimeMgr
+    Agent --> Executor
+    Agent --> Inventory
+    Agent --> Health
+
+    RuntimeMgr --> Containers
+    RuntimeMgr --> Kubernetes
+    RuntimeMgr --> VM
+    RuntimeMgr --> WASM
+    RuntimeMgr --> BareMetal
+
+    Executor --> RuntimeMgr
+
+    Inventory --> Observability
+    Health --> Observability
+
+    %% =====================================================
+    %% Layer Rules
+    %% =====================================================
+
+    Rule1["Only communicates with adjacent layers"]
+    Rule2["Higher layers never bypass lower layers"]
+
+    Rule1 -.-> L4
+    Rule2 -.-> L4
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef presentation fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef gateway fill:#FFF3E0,stroke:#EF6C00,color:#000;
+    classDef application fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef platform fill:#EDE7F6,stroke:#5E35B1,color:#000;
+    classDef communication fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef execution fill:#FCE4EC,stroke:#C2185B,color:#000;
+    classDef infrastructure fill:#ECEFF1,stroke:#455A64,color:#000;
+    classDef rule fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray: 5 5;
+
+    class Console,REST,WS,CLI presentation
+    class Gateway gateway
+    class Deploy,Workflow,Policy,Scheduler,Plugin,Secret application
+    class Events,Metadata,Config,Audit,Observability,Cache platform
+    class Relay,Protocol communication
+    class Agent,RuntimeMgr,Executor,Inventory,Health execution
+    class Containers,Kubernetes,VM,WASM,BareMetal infrastructure
+    class Rule1,Rule2 rule

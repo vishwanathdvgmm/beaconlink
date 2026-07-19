@@ -1,0 +1,158 @@
+---
+title: BeaconLink Audit Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Audit Records
+    %% =====================================================
+
+    class AuditRecord {
+        +UUID id
+        +AuditAction action
+        +AuditResult result
+        +AuditSeverity severity
+        +DateTime timestamp
+        +String correlationId
+    }
+
+    class AuditEntry {
+        +UUID id
+        +String field
+        +String previousValue
+        +String newValue
+    }
+
+    %% =====================================================
+    %% Actor
+    %% =====================================================
+
+    class User {
+        +UUID id
+        +String username
+        +UserType type
+    }
+
+    class ServiceIdentity {
+        +UUID id
+        +String identity
+        +IdentityType type
+    }
+
+    class Agent {
+        +UUID id
+        +String hostname
+    }
+
+    %% =====================================================
+    %% Target Resources
+    %% =====================================================
+
+    class Deployment {
+        +UUID id
+        +String name
+    }
+
+    class Site {
+        +UUID id
+        +String name
+    }
+
+    class Policy {
+        +UUID id
+        +String name
+    }
+
+    class Secret {
+        +UUID id
+        +String name
+    }
+
+    class Workflow {
+        +UUID id
+        +String name
+    }
+
+    %% =====================================================
+    %% Traceability
+    %% =====================================================
+
+    class Session {
+        +UUID id
+        +String sessionId
+        +IPAddress sourceIP
+    }
+
+    class Event {
+        +UUID id
+        +String type
+        +DateTime timestamp
+    }
+
+    class Correlation {
+        +UUID id
+        +String traceId
+        +String requestId
+    }
+
+    %% =====================================================
+    %% Retention
+    %% =====================================================
+
+    class AuditArchive {
+        +UUID id
+        +RetentionPolicy policy
+        +Date archivedAt
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    AuditRecord "1" --> "*" AuditEntry : contains
+
+    User --> "*" AuditRecord : initiates
+
+    ServiceIdentity --> "*" AuditRecord : initiates
+
+    Agent --> "*" AuditRecord : generates
+
+    Deployment --> "*" AuditRecord : audited
+
+    Site --> "*" AuditRecord : audited
+
+    Policy --> "*" AuditRecord : audited
+
+    Secret --> "*" AuditRecord : audited
+
+    Workflow --> "*" AuditRecord : audited
+
+    AuditRecord --> Session : originates from
+
+    AuditRecord --> Correlation : linked by
+
+    AuditRecord --> "*" Event : publishes
+
+    AuditRecord --> AuditArchive : archived into
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef audit fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef actor fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef resource fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef trace fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef retention fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class AuditRecord,AuditEntry audit
+
+    class User,ServiceIdentity,Agent actor
+
+    class Deployment,Site,Policy,Secret,Workflow resource
+
+    class Session,Event,Correlation trace
+
+    class AuditArchive retention

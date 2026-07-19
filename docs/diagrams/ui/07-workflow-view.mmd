@@ -1,0 +1,251 @@
+---
+title: BeaconLink Workflow View Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> WorkflowUI
+
+%% =====================================================
+%% Workflow View
+%% =====================================================
+
+subgraph WorkflowUI["Workflow Details"]
+
+direction TB
+
+Header["Workflow Details
+────────────────────────
+Workflow • Execution • Status • Revision"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Refresh["Refresh"]
+
+Start["Start Workflow"]
+
+Pause["Pause"]
+
+Resume["Resume"]
+
+Retry["Retry Failed Steps"]
+
+Cancel["Cancel"]
+
+Export["Export Execution"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Workflow Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+OverviewNav["Overview"]
+
+ExecutionNav["Execution Graph"]
+
+TasksNav["Tasks"]
+
+EventsNav["Events"]
+
+VariablesNav["Variables"]
+
+HistoryNav["Execution History"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph WorkflowDetails["Workflow Overview"]
+
+direction TB
+
+Metadata["Metadata
+• Workflow ID
+• Immutable Revision
+• Owner
+• Namespace"]
+
+Status["Execution Status
+• Running
+• Completed
+• Failed
+• Cancelled"]
+
+Trigger["Trigger
+• API
+• Scheduler
+• Event
+• Manual"]
+
+Progress["Execution Progress
+• Active Stage
+• Completed Tasks
+• Remaining Tasks"]
+
+DesiredState["Desired State
+• Current Revision
+• Reconciliation
+• Drift Status"]
+
+end
+
+%% =====================================================
+
+subgraph ExecutionRuntime["Workflow Execution"]
+
+direction TB
+
+Graph["Execution Graph (DAG)"]
+
+Stages["Workflow Stages"]
+
+Tasks["Running Tasks"]
+
+Dependencies["Task Dependencies"]
+
+Variables["Workflow Variables"]
+
+Outputs["Execution Outputs"]
+
+Errors["Failures & Retries"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Operational Insights"]
+
+direction LR
+
+Timeline["Execution Timeline"]
+
+Metrics["Workflow Metrics"]
+
+EventsPanel["Live Events"]
+
+LogsPanel["Execution Logs"]
+
+AuditPanel["Audit History"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+WorkflowEngine["Workflow Engine"]
+
+Planner["Deployment Planner"]
+
+Scheduler["Distributed Scheduler"]
+
+RuntimeManager["Runtime Manager"]
+
+Policy["Policy Engine"]
+
+Inventory["Inventory Service"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+WorkflowDetails --> WorkflowEngine
+
+WorkflowDetails --> Inventory
+
+ExecutionRuntime --> WorkflowEngine
+
+ExecutionRuntime --> RuntimeManager
+
+ExecutionRuntime --> Scheduler
+
+ExecutionRuntime --> Planner
+
+ExecutionRuntime --> Policy
+
+BottomPanels --> Monitoring
+
+BottomPanels --> EventsSvc
+
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Operations
+%% =====================================================
+
+Start --> WorkflowEngine
+
+Pause --> WorkflowEngine
+
+Resume --> WorkflowEngine
+
+Retry --> WorkflowEngine
+
+Cancel --> WorkflowEngine
+
+Export --> Inventory
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+WorkflowEngine -. Stage Progress .-> Progress
+
+WorkflowEngine -. DAG Updates .-> Graph
+
+WorkflowEngine -. Task Status .-> Tasks
+
+Scheduler -. Scheduling Decisions .-> Dependencies
+
+RuntimeManager -. Runtime Execution .-> Stages
+
+Planner -. Planned Operations .-> Timeline
+
+Inventory -. Desired State Updates .-> DesiredState
+
+Policy -. Policy Decisions .-> Errors
+
+Monitoring -. Metrics Stream .-> Metrics
+
+Monitoring -. Log Stream .-> LogsPanel
+
+EventsSvc -. Live Workflow Events .-> EventsPanel
+
+AuditSvc -. Audit Records .-> AuditPanel

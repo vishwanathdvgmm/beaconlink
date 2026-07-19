@@ -1,0 +1,236 @@
+---
+title: BeaconLink Agent Details Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> AgentUI
+
+%% =====================================================
+%% Agent Details Page
+%% =====================================================
+
+subgraph AgentUI["Agent Details"]
+
+direction TB
+
+Header["Agent Details
+────────────────────────
+Agent Identity • Site • Runtime • Health"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Refresh["Refresh"]
+
+Logs["View Logs"]
+
+Terminal["Remote Terminal"]
+
+Restart["Restart Agent"]
+
+Drain["Drain Agent"]
+
+Upgrade["Upgrade Agent"]
+
+Delete["Remove Agent"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Agent Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+OverviewNav["Overview"]
+
+DeploymentsNav["Deployments"]
+
+MetricsNav["Metrics"]
+
+EventsNav["Events"]
+
+PoliciesNav["Policies"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph Details["Agent Information"]
+
+direction TB
+
+Identity["Identity
+• Agent ID
+• Site
+• Version
+• Runtime"]
+
+Health["Health
+• Status
+• Heartbeats
+• Uptime"]
+
+Resources["Resources
+• CPU
+• Memory
+• Storage
+• Network"]
+
+Capabilities["Capabilities
+• Supported Runtimes
+• Plugins
+• Labels
+• Features"]
+
+Connectivity["Connectivity
+• Relay Status
+• Latency
+• mTLS Session
+• Last Seen"]
+
+DesiredState["Desired State
+• Revision
+• Reconciliation
+• Drift Status"]
+
+end
+
+%% =====================================================
+
+subgraph RuntimeView["Runtime Status"]
+
+direction TB
+
+Workloads["Running Workloads"]
+
+Jobs["Active Jobs"]
+
+Workflows["Assigned Workflows"]
+
+Secrets["Secret Usage"]
+
+Volumes["Volumes"]
+
+Networking["Networking"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Observability"]
+
+direction LR
+
+MetricsPanel["Live Metrics"]
+
+LogsPanel["Streaming Logs"]
+
+EventsPanel["Event Timeline"]
+
+AuditPanel["Audit History"]
+
+end
+
+end
+
+%% =====================================================
+%% Backend Services
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+Inventory["Inventory Service"]
+
+AgentService["Agent Management"]
+
+WorkflowEngine["Workflow Engine"]
+
+RuntimeManager["Runtime Manager"]
+
+Policy["Policy Engine"]
+
+Relay["Relay Network"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Flow
+%% =====================================================
+
+Details --> Inventory
+Details --> AgentService
+Details --> Policy
+
+RuntimeView --> RuntimeManager
+RuntimeView --> WorkflowEngine
+
+BottomPanels --> Monitoring
+BottomPanels --> EventsSvc
+BottomPanels --> AuditSvc
+
+Connectivity --> Relay
+
+%% =====================================================
+%% Operations
+%% =====================================================
+
+Restart --> AgentService
+
+Drain --> WorkflowEngine
+
+Upgrade --> AgentService
+
+Delete --> Inventory
+
+Logs --> Monitoring
+
+Terminal --> Relay
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+Monitoring -. Metrics Stream .-> MetricsPanel
+
+EventsSvc -. Live Events .-> EventsPanel
+
+AuditSvc -. Audit Stream .-> AuditPanel
+
+AgentService -. Heartbeats .-> Health
+
+Inventory -. Desired State .-> DesiredState
+
+WorkflowEngine -. Workflow Status .-> Workflows
+
+RuntimeManager -. Runtime Status .-> Workloads
+
+Relay -. Connection Status .-> Connectivity

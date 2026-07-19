@@ -1,0 +1,172 @@
+---
+title: BeaconLink Workflow Execution Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant User as Platform Operator
+    participant API as API Gateway
+    participant Workflow as Workflow Engine
+    participant Planner as Deployment Planner
+    participant Scheduler as Distributed Scheduler
+    participant Policy as Policy Engine
+    participant Inventory as Inventory Service
+    participant Relay as Relay Network
+    participant Agent as BeaconLink Agent
+    participant Runtime as Runtime Manager
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Workflow Initialization
+    %% =====================================================
+
+    User->>API: Submit workflow request
+
+    API->>Workflow: Create workflow instance
+
+    Workflow->>Workflow: Generate Workflow ID
+    Workflow->>Workflow: Persist execution state
+    Workflow->>Audit: Record workflow creation
+
+    %% =====================================================
+    %% Planning Phase
+    %% =====================================================
+
+    Workflow->>Planner: Generate execution plan
+
+    Planner->>Inventory: Retrieve infrastructure inventory
+    Inventory-->>Planner: Sites, agents, capabilities
+
+    Planner->>Policy: Validate execution constraints
+    Policy-->>Planner: Constraints satisfied
+
+    Planner->>Planner: Resolve dependencies
+    Planner->>Planner: Build execution graph
+    Planner->>Planner: Generate execution stages
+
+    Planner-->>Workflow: Immutable execution plan
+
+    %% =====================================================
+    %% Scheduling Phase
+    %% =====================================================
+
+    Workflow->>Scheduler: Allocate execution targets
+
+    Scheduler->>Inventory: Discover healthy agents
+    Inventory-->>Scheduler: Available execution nodes
+
+    Scheduler->>Scheduler: Evaluate capacity
+    Scheduler->>Scheduler: Balance workload
+    Scheduler->>Scheduler: Select execution targets
+
+    Scheduler-->>Workflow: Target assignments
+
+    %% =====================================================
+    %% Stage Execution
+    %% =====================================================
+
+    loop For Each Execution Stage
+
+        Workflow->>Events: Publish StageStarted
+
+        par Parallel Task Execution
+
+            Workflow->>Relay: Dispatch task to Agent A
+            Relay->>Agent: Execute task
+            Agent->>Runtime: Execute operation
+            Runtime-->>Agent: Status
+
+        and
+
+            Workflow->>Relay: Dispatch task to Agent B
+            Relay->>Agent: Execute task
+            Agent->>Runtime: Execute operation
+            Runtime-->>Agent: Status
+
+        and
+
+            Workflow->>Relay: Dispatch task to Agent C
+            Relay->>Agent: Execute task
+            Agent->>Runtime: Execute operation
+            Runtime-->>Agent: Status
+
+        end
+
+        Agent->>Relay: Task completion
+        Relay->>Workflow: Aggregate execution results
+
+        Workflow->>Workflow: Verify stage completion
+
+        Workflow->>Events: Publish StageCompleted
+
+    end
+
+    %% =====================================================
+    %% Progress Monitoring
+    %% =====================================================
+
+    loop Until Workflow Completes
+
+        Workflow->>Agent: Request execution status
+
+        Agent-->>Workflow: Progress update
+
+        Workflow->>Events: Publish WorkflowProgress
+
+        Workflow->>Audit: Record execution checkpoint
+
+    end
+
+    %% =====================================================
+    %% Failure Recovery
+    %% =====================================================
+
+    alt Task Failure
+
+        Agent-->>Workflow: Execution failed
+
+        Workflow->>Planner: Determine recovery strategy
+
+        alt Retry Allowed
+
+            Planner-->>Workflow: Retry operation
+
+            Workflow->>Relay: Redispatch task
+
+        else Rollback Required
+
+            Planner-->>Workflow: Rollback workflow
+
+            Workflow->>Relay: Execute rollback
+
+            Workflow->>Events: Publish WorkflowRollbackStarted
+
+        end
+
+    else All Tasks Successful
+
+        Workflow->>Events: Publish WorkflowCompleted
+
+        Workflow->>Audit: Record successful execution
+
+    end
+
+    %% =====================================================
+    %% Finalization
+    %% =====================================================
+
+    Workflow->>Inventory: Synchronize final state
+
+    Inventory-->>Workflow: State updated
+
+    Workflow-->>API: Workflow completed
+
+    API-->>User: Execution results
+
+    %% =====================================================
+    %% Continuous Reconciliation
+    %% =====================================================
+
+    Note over Workflow,Agent: After workflow completion,<br/>Continuous Reconciliation ensures the<br/>deployed infrastructure remains aligned<br/>with the immutable Desired State.

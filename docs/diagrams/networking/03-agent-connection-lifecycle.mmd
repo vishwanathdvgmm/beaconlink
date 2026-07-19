@@ -1,0 +1,226 @@
+---
+title: BeaconLink Agent Connection Lifecycle
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Agent Startup
+    %% =====================================================
+
+    subgraph Startup["Agent Startup"]
+
+        Boot["Agent Process Starts"]
+        Load["Load Configuration"]
+        Identity["Load Identity & Credentials"]
+        Discover["Discover Relay Network"]
+
+    end
+
+    Boot --> Load
+    Load --> Identity
+    Identity --> Discover
+
+    %% =====================================================
+    %% Connection Establishment
+    %% =====================================================
+
+    subgraph Connection["Connection Establishment"]
+
+        Select["Select Best Relay"]
+        Connect["Open Outbound Connection"]
+        MTLS["Mutual TLS Handshake"]
+        Auth["Authenticate Session"]
+        Register["Register Session"]
+
+    end
+
+    Discover --> Select
+    Select --> Connect
+    Connect --> MTLS
+    MTLS --> Auth
+    Auth --> Register
+
+    %% =====================================================
+    %% Connected State
+    %% =====================================================
+
+    subgraph Connected["Connected Session"]
+
+        Online["Online"]
+        Heartbeat["Heartbeat"]
+        Status["Status Updates"]
+        Metrics["Metrics Stream"]
+        Events["Event Stream"]
+
+    end
+
+    Register --> Online
+
+    Online --> Heartbeat
+    Online --> Status
+    Online --> Metrics
+    Online --> Events
+
+    %% =====================================================
+    %% Command Processing
+    %% =====================================================
+
+    subgraph Commands["Command Processing"]
+
+        Receive["Receive Commands"]
+        Validate["Validate Command"]
+        Execute["Execute Task"]
+        Report["Return Results"]
+
+    end
+
+    Online --> Receive
+
+    Receive --> Validate
+    Validate --> Execute
+    Execute --> Report
+
+    Report --> Events
+
+    %% =====================================================
+    %% Continuous Communication
+    %% =====================================================
+
+    Heartbeat -. Periodic .-> Online
+    Status -. Continuous .-> Online
+    Metrics -. Streaming .-> Online
+
+    %% =====================================================
+    %% Connection Monitoring
+    %% =====================================================
+
+    subgraph Monitoring["Connection Monitoring"]
+
+        Health["Connection Health"]
+        Timeout["Heartbeat Timeout"]
+        Failure["Connection Failure"]
+
+    end
+
+    Heartbeat --> Health
+    Health --> Timeout
+    Timeout --> Failure
+
+    %% =====================================================
+    %% Recovery
+    %% =====================================================
+
+    subgraph Recovery["Recovery Workflow"]
+
+        Backoff["Exponential Backoff"]
+        Rediscover["Rediscover Relays"]
+        Reconnect["Reconnect"]
+        Resume["Resume Session"]
+
+    end
+
+    Failure --> Backoff
+    Backoff --> Rediscover
+    Rediscover --> Select
+
+    Register --> Resume
+
+    Resume --> Online
+
+    %% =====================================================
+    %% Credential Lifecycle
+    %% =====================================================
+
+    subgraph Credentials["Credential Management"]
+
+        Rotation["Credential Rotation"]
+        Renew["Certificate Renewal"]
+        ReAuth["Re-authenticate"]
+
+    end
+
+    Online --> Rotation
+
+    Rotation --> Renew
+    Renew --> ReAuth
+    ReAuth --> Register
+
+    %% =====================================================
+    %% Session Termination
+    %% =====================================================
+
+    subgraph Shutdown["Session Termination"]
+
+        Drain["Finish Active Tasks"]
+        Disconnect["Close Secure Session"]
+        Offline["Offline"]
+
+    end
+
+    Online --> Drain
+
+    Drain --> Disconnect
+    Disconnect --> Offline
+
+    %% =====================================================
+    %% Lifecycle States
+    %% =====================================================
+
+    States["Lifecycle States
+
+• Starting
+• Connecting
+• Authenticating
+• Registered
+• Online
+• Reconnecting
+• Offline
+• Terminated"]
+
+    States -.-> Startup
+    States -.-> Connection
+    States -.-> Connected
+    States -.-> Recovery
+
+    %% =====================================================
+    %% Networking Principles
+    %% =====================================================
+
+    Principles["Connection Principles
+
+• Outbound Connections Only
+• Relay-First Networking
+• Zero Trust Authentication
+• Mutual TLS
+• Automatic Reconnection
+• Session Resumption
+• Secure Credential Rotation
+• Highly Available Relays"]
+
+    Principles -.-> Connection
+    Principles -.-> Recovery
+    Principles -.-> Credentials
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef startup fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef connection fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef runtime fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef monitoring fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef lifecycle fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Boot,Load,Identity,Discover startup
+
+    class Select,Connect,MTLS,Auth,Register connection
+
+    class Online,Heartbeat,Status,Metrics,Events,Receive,Validate,Execute,Report runtime
+
+    class Health,Timeout,Failure,Backoff,Rediscover,Reconnect,Resume,Rotation,Renew,ReAuth monitoring
+
+    class Drain,Disconnect,Offline lifecycle
+
+    class States,Principles note

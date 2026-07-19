@@ -1,0 +1,176 @@
+---
+title: BeaconLink Future Architecture Roadmap
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Current Platform
+    %% =====================================================
+
+    subgraph Current["Current BeaconLink Platform"]
+
+        Console["Console"]
+        Gateway["API Gateway"]
+        Control["Control Plane"]
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+
+    end
+
+    %% =====================================================
+    %% Near-Term Roadmap
+    %% =====================================================
+
+    subgraph Phase1["Phase 1 — Platform Extensions"]
+
+        Plugin["Plugin System"]
+        Secret["Secret Management"]
+        Policy["Policy Engine"]
+        GitOps["GitOps Integration"]
+
+    end
+
+    Current --> Phase1
+
+    %% =====================================================
+    %% Medium-Term Roadmap
+    %% =====================================================
+
+    subgraph Phase2["Phase 2 — Automation"]
+
+        Workflow["Workflow Engine"]
+        Events["Event Streaming Platform"]
+        Scheduler["Distributed Scheduler"]
+        Remediation["Autonomous Remediation"]
+
+    end
+
+    Phase1 --> Phase2
+
+    %% =====================================================
+    %% Large-Scale Operations
+    %% =====================================================
+
+    subgraph Phase3["Phase 3 — Enterprise Scale"]
+
+        Federation["Global Relay Federation"]
+        MultiTenant["Multi-Tenancy"]
+        Operator["Kubernetes Operator"]
+        Mesh["Service Mesh Integration"]
+
+    end
+
+    Phase2 --> Phase3
+
+    %% =====================================================
+    %% Platform Evolution
+    %% =====================================================
+
+    subgraph Phase4["Phase 4 — Runtime Evolution"]
+
+        WASM["WebAssembly Runtime"]
+        Marketplace["Marketplace"]
+        Edge["Edge Computing"]
+        AI["AI-Assisted Operations"]
+
+    end
+
+    Phase3 --> Phase4
+
+    %% =====================================================
+    %% Long-Term Vision
+    %% =====================================================
+
+    subgraph Vision["Long-Term Vision"]
+
+        Universal["Universal Infrastructure Control Plane"]
+
+        Cloud["Cloud"]
+        OnPrem["On-Premises"]
+        EdgeSite["Edge"]
+        Kubernetes["Kubernetes"]
+        BareMetal["Bare Metal"]
+        Future["Future Runtime Technologies"]
+
+    end
+
+    Phase4 --> Universal
+
+    Universal --> Cloud
+    Universal --> OnPrem
+    Universal --> EdgeSite
+    Universal --> Kubernetes
+    Universal --> BareMetal
+    Universal --> Future
+
+    %% =====================================================
+    %% Guiding Principles
+    %% =====================================================
+
+    Principles["Architectural Principles
+
+• Declarative Infrastructure
+• Relay-First Networking
+• Runtime Abstraction
+• Zero Trust Security
+• Event-Driven Design
+• Extensible Platform
+• Horizontal Scalability
+• Backward Compatibility"]
+
+    Principles -. Guides Every Phase .-> Current
+    Principles -.-> Phase1
+    Principles -.-> Phase2
+    Principles -.-> Phase3
+    Principles -.-> Phase4
+    Principles -.-> Vision
+
+    %% =====================================================
+    %% RFC Mapping
+    %% =====================================================
+
+    RFCs["Implemented Through RFCs
+
+RFC-0001 → Peer-to-Peer Networking
+RFC-0002 → Global Relay Network
+RFC-0003 → Plugin System
+RFC-0004 → Mobile Agent
+RFC-0005 → Edge Cache
+RFC-0006 → High Availability Relays
+RFC-0007 → Multi-Tenancy
+RFC-0008 → Service Mesh
+RFC-0009 → Policy Engine
+RFC-0010 → Secret Management
+RFC-0011 → GitOps
+RFC-0012 → Kubernetes Operator
+RFC-0013 → Autonomous Remediation
+RFC-0014 → Workflow Engine
+RFC-0015 → Event Streaming
+RFC-0016 → WebAssembly Runtime
+RFC-0017 → AI Operations
+RFC-0018 → Distributed Scheduler
+RFC-0019 → Disaster Recovery
+RFC-0020 → Marketplace"]
+
+    RFCs -. Defines Evolution .-> Phase1
+    RFCs -.-> Phase2
+    RFCs -.-> Phase3
+    RFCs -.-> Phase4
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef current fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef phase fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef vision fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5;
+
+    class Console,Gateway,Control,Relay,Agent current
+
+    class Plugin,Secret,Policy,GitOps,Workflow,Events,Scheduler,Remediation,Federation,MultiTenant,Operator,Mesh,WASM,Marketplace,Edge,AI phase
+
+    class Universal,Cloud,OnPrem,EdgeSite,Kubernetes,BareMetal,Future vision
+
+    class Principles,RFCs note

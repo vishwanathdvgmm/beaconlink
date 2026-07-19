@@ -1,0 +1,185 @@
+---
+title: BeaconLink Plugin Loading Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Control as BeaconLink Control Plane
+    participant PluginMgr as Plugin Manager
+    participant Registry as Plugin Registry
+    participant Policy as Policy Engine
+    participant Catalog as Capability Catalog
+    participant Runtime as Runtime Manager
+    participant Plugin as Runtime Plugin
+    participant Adapter as Runtime Adapter
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Platform Startup
+    %% =====================================================
+
+    Note over Control,PluginMgr: BeaconLink services initialize<br/>during platform startup
+
+    Control->>PluginMgr: Initialize plugin framework
+
+    PluginMgr->>Registry: Discover installed plugins
+    Registry-->>PluginMgr: Available plugin metadata
+
+    %% =====================================================
+    %% Plugin Discovery
+    %% =====================================================
+
+    loop For Each Registered Plugin
+
+        PluginMgr->>Registry: Load plugin manifest
+
+        Registry-->>PluginMgr: Manifest
+
+        Note right of Registry: Manifest includes:<br/>• Plugin ID<br/>• Version<br/>• Capabilities<br/>• Dependencies<br/>• Compatibility<br/>• Signature
+
+        PluginMgr->>PluginMgr: Validate manifest
+
+    end
+
+    %% =====================================================
+    %% Trust Verification
+    %% =====================================================
+
+    loop For Each Plugin
+
+        PluginMgr->>Policy: Verify plugin policy
+
+        Policy->>Policy: Validate signature
+        Policy->>Policy: Validate compatibility
+        Policy->>Policy: Validate permissions
+
+        alt Plugin Trusted
+
+            Policy-->>PluginMgr: Approved
+
+        else Plugin Rejected
+
+            Policy-->>PluginMgr: Rejected
+
+            PluginMgr->>Audit: Record plugin rejection
+
+            PluginMgr->>Events: Publish PluginRejected
+
+        end
+
+    end
+
+    %% =====================================================
+    %% Dependency Resolution
+    %% =====================================================
+
+    PluginMgr->>PluginMgr: Resolve dependencies
+
+    PluginMgr->>Registry: Load dependency graph
+
+    Registry-->>PluginMgr: Dependency information
+
+    PluginMgr->>PluginMgr: Determine load order
+
+    %% =====================================================
+    %% Plugin Initialization
+    %% =====================================================
+
+    loop Load Approved Plugins
+
+        PluginMgr->>Plugin: Initialize plugin
+
+        Plugin->>Plugin: Allocate resources
+        Plugin->>Plugin: Register services
+
+        Plugin->>Runtime: Register runtime adapter
+
+        Runtime->>Adapter: Activate adapter
+
+        Adapter-->>Runtime: Adapter initialized
+
+        Runtime-->>Plugin: Registration successful
+
+    end
+
+    %% =====================================================
+    %% Capability Registration
+    %% =====================================================
+
+    PluginMgr->>Catalog: Register plugin capabilities
+
+    Catalog->>Catalog: Update capability index
+
+    Catalog-->>PluginMgr: Capabilities published
+
+    PluginMgr->>Events: Publish PluginLoaded
+
+    PluginMgr->>Audit: Record successful initialization
+
+    %% =====================================================
+    %% Runtime Availability
+    %% =====================================================
+
+    Control->>Runtime: Query available runtimes
+
+    Runtime-->>Control: Supported runtime list
+
+    Note over Runtime,Control: Examples:<br/>• Kubernetes<br/>• Docker<br/>• Nomad<br/>• Virtual Machines<br/>• Serverless<br/>• Custom Plugins
+
+    %% =====================================================
+    %% Health Monitoring
+    %% =====================================================
+
+    loop Continuous Plugin Monitoring
+
+        PluginMgr->>Plugin: Health check
+
+        Plugin-->>PluginMgr: Status
+
+        alt Plugin Healthy
+
+            PluginMgr->>Catalog: Refresh capability state
+
+        else Plugin Failure
+
+            PluginMgr->>Runtime: Disable adapter
+
+            Runtime-->>PluginMgr: Adapter disabled
+
+            PluginMgr->>Events: Publish PluginUnloaded
+
+            PluginMgr->>Audit: Record plugin failure
+
+        end
+
+    end
+
+    %% =====================================================
+    %% Hot Reload
+    %% =====================================================
+
+    opt Plugin Upgrade or Installation
+
+        Registry->>PluginMgr: New plugin available
+
+        PluginMgr->>Policy: Validate updated plugin
+
+        Policy-->>PluginMgr: Approved
+
+        PluginMgr->>Plugin: Graceful shutdown
+
+        Plugin->>Plugin: Release resources
+
+        PluginMgr->>Plugin: Load updated version
+
+        Plugin->>Runtime: Register new adapter
+
+        Runtime-->>PluginMgr: Upgrade complete
+
+        PluginMgr->>Events: Publish PluginReloaded
+
+    end
+
+    Note over PluginMgr,Runtime: BeaconLink dynamically discovers,<br/>validates, loads, monitors, and reloads plugins<br/>without modifying the core platform architecture.

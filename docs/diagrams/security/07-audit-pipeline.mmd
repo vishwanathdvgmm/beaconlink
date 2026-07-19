@@ -1,0 +1,288 @@
+---
+title: BeaconLink Security Audit Pipeline
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Audit Event Sources
+    %% =====================================================
+
+    subgraph Sources["Audit Event Sources"]
+
+        Users["User Operations"]
+        APIs["API Requests"]
+        Auth["Authentication Events"]
+        Policy["Policy Engine"]
+        Deployments["Deployment Planner"]
+        Workflow["Workflow Engine"]
+        Scheduler["Distributed Scheduler"]
+        Agents["BeaconLink Agents"]
+        Runtime["Runtime Manager"]
+        Secrets["Secret Management"]
+        Relays["Relay Network"]
+        Plugins["Plugin Framework"]
+
+    end
+
+    %% =====================================================
+    %% Audit Collection
+    %% =====================================================
+
+    subgraph Collection["Audit Collection Layer"]
+
+        Collector["Audit Collector"]
+
+        Normalizer["Event Normalization"]
+
+        Enrichment["Context Enrichment"]
+
+        Correlation["Correlation Engine"]
+
+    end
+
+    Users --> Collector
+    APIs --> Collector
+    Auth --> Collector
+    Policy --> Collector
+    Deployments --> Collector
+    Workflow --> Collector
+    Scheduler --> Collector
+    Agents --> Collector
+    Runtime --> Collector
+    Secrets --> Collector
+    Relays --> Collector
+    Plugins --> Collector
+
+    Collector --> Normalizer
+    Normalizer --> Enrichment
+    Enrichment --> Correlation
+
+    %% =====================================================
+    %% Metadata Enrichment
+    %% =====================================================
+
+    subgraph Metadata["Audit Context"]
+
+        Identity["Identity Context"]
+
+        Session["Session ID"]
+
+        Resource["Resource Metadata"]
+
+        Site["Site Information"]
+
+        Deployment["Deployment Revision"]
+
+        Trace["Trace / Correlation ID"]
+
+    end
+
+    Identity --> Enrichment
+    Session --> Enrichment
+    Resource --> Enrichment
+    Site --> Enrichment
+    Deployment --> Enrichment
+    Trace --> Enrichment
+
+    %% =====================================================
+    %% Event Streaming
+    %% =====================================================
+
+    subgraph Streaming["Event Streaming Platform"]
+
+        EventBus["Event Bus"]
+
+        Partition["Partitioning"]
+
+        Ordering["Ordered Streams"]
+
+        Durable["Durable Storage"]
+
+    end
+
+    Correlation --> EventBus
+    EventBus --> Partition
+    Partition --> Ordering
+    Ordering --> Durable
+
+    %% =====================================================
+    %% Audit Storage
+    %% =====================================================
+
+    subgraph Storage["Audit Storage"]
+
+        Immutable["Immutable Audit Log"]
+
+        Index["Search Index"]
+
+        Archive["Long-Term Archive"]
+
+        Retention["Retention Policies"]
+
+    end
+
+    Durable --> Immutable
+    Immutable --> Index
+    Immutable --> Archive
+    Archive --> Retention
+
+    %% =====================================================
+    %% Security Analytics
+    %% =====================================================
+
+    subgraph Analytics["Security Analytics"]
+
+        Detection["Threat Detection"]
+
+        Compliance["Compliance Reporting"]
+
+        Behavior["Behavior Analytics"]
+
+        Risk["Risk Scoring"]
+
+    end
+
+    Immutable --> Detection
+    Immutable --> Compliance
+    Immutable --> Behavior
+
+    Detection --> Risk
+
+    %% =====================================================
+    %% Operations
+    %% =====================================================
+
+    subgraph Operations["Security Operations"]
+
+        Dashboard["Security Dashboard"]
+
+        SIEM["SIEM Integration"]
+
+        Alerts["Alert Manager"]
+
+        Incident["Incident Response"]
+
+    end
+
+    Detection --> Dashboard
+    Detection --> Alerts
+
+    Compliance --> Dashboard
+    Behavior --> Dashboard
+
+    Immutable --> SIEM
+
+    Alerts --> Incident
+    Risk --> Incident
+
+    %% =====================================================
+    %% Audit Integrity
+    %% =====================================================
+
+    subgraph Integrity["Integrity Controls"]
+
+        Hash["Cryptographic Hashing"]
+
+        Timestamp["Trusted Timestamp"]
+
+        Signature["Digital Signature"]
+
+        Verification["Integrity Verification"]
+
+    end
+
+    Collector --> Hash
+    Hash --> Timestamp
+    Timestamp --> Signature
+    Signature --> Verification
+    Verification --> Immutable
+
+    %% =====================================================
+    %% Audit Queries
+    %% =====================================================
+
+    subgraph Queries["Consumers"]
+
+        Investigations["Security Investigations"]
+
+        Forensics["Digital Forensics"]
+
+        Governance["Governance"]
+
+        APIs2["Audit APIs"]
+
+        Reports["Compliance Reports"]
+
+    end
+
+    Index --> Investigations
+    Index --> Forensics
+    Index --> Governance
+    Index --> APIs2
+    Archive --> Reports
+
+    %% =====================================================
+    %% Audit Record Structure
+    %% =====================================================
+
+    Record["Audit Record
+
+• Event ID
+• Timestamp
+• Identity
+• Session ID
+• Resource
+• Requested Action
+• Authorization Decision
+• Site
+• Deployment Revision
+• Correlation ID
+• Result
+• Cryptographic Integrity"]
+
+    Record -.-> Collection
+    Record -.-> Storage
+
+    %% =====================================================
+    %% Audit Principles
+    %% =====================================================
+
+    Principles["Audit Principles
+
+• Immutable Records
+• Event Driven
+• Cryptographic Integrity
+• Complete Traceability
+• Correlated Events
+• Long-Term Retention
+• Compliance Ready
+• SIEM Integration
+• Full Operational Visibility"]
+
+    Principles -.-> Integrity
+    Principles -.-> Analytics
+    Principles -.-> Storage
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef source fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef collection fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef streaming fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef storage fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Users,APIs,Auth,Policy,Deployments,Workflow,Scheduler,Agents,Runtime,Secrets,Relays,Plugins source
+
+    class Collector,Normalizer,Enrichment,Correlation,Identity,Session,Resource,Site,Deployment,Trace collection
+
+    class EventBus,Partition,Ordering,Durable streaming
+
+    class Immutable,Index,Archive,Retention,Detection,Compliance,Behavior,Risk storage
+
+    class Dashboard,SIEM,Alerts,Incident,Hash,Timestamp,Signature,Verification,Investigations,Forensics,Governance,APIs2,Reports security
+
+    class Record,Principles note

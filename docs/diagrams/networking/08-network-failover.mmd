@@ -1,0 +1,267 @@
+---
+title: BeaconLink Network Failover Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Scheduler["Distributed Scheduler"]
+        RelayManager["Relay Manager"]
+        HealthService["Network Health Service"]
+        Policy["Policy Engine"]
+
+    end
+
+    Scheduler --> RelayManager
+    RelayManager --> HealthService
+    RelayManager --> Policy
+
+    %% =====================================================
+    %% Global Relay Network
+    %% =====================================================
+
+    subgraph Relay["Relay Federation"]
+
+        Router["Global Relay Router"]
+
+        RelayA["Primary Relay"]
+        RelayB["Secondary Relay"]
+        RelayC["Regional Relay"]
+        RelayD["Disaster Recovery Relay"]
+
+        Router --> RelayA
+        Router --> RelayB
+        Router --> RelayC
+        Router --> RelayD
+
+    end
+
+    RelayManager --> Router
+
+    %% =====================================================
+    %% Managed Sites
+    %% =====================================================
+
+    subgraph Sites["Managed Sites"]
+
+        Site1["Production Site A"]
+        Site2["Production Site B"]
+        Site3["Regional Site"]
+        Site4["Edge Site"]
+
+    end
+
+    RelayA --> Site1
+    RelayA --> Site2
+    RelayB --> Site3
+    RelayC --> Site4
+
+    %% =====================================================
+    %% Agent Connections
+    %% =====================================================
+
+    subgraph Agents["Persistent Agent Sessions"]
+
+        Agent1["BeaconLink Agent"]
+        Agent2["BeaconLink Agent"]
+        Agent3["BeaconLink Agent"]
+        Agent4["BeaconLink Agent"]
+
+    end
+
+    Site1 --> Agent1
+    Site2 --> Agent2
+    Site3 --> Agent3
+    Site4 --> Agent4
+
+    %% =====================================================
+    %% Health Monitoring
+    %% =====================================================
+
+    subgraph Monitoring["Continuous Health Monitoring"]
+
+        Heartbeat["Heartbeat Monitoring"]
+        Latency["Latency Checks"]
+        Availability["Availability Checks"]
+        SessionHealth["Session Health"]
+        FailureDetect["Failure Detection"]
+
+    end
+
+    Agent1 --> Heartbeat
+    Agent2 --> Heartbeat
+    Agent3 --> Heartbeat
+    Agent4 --> Heartbeat
+
+    Heartbeat --> Latency
+    Latency --> Availability
+    Availability --> SessionHealth
+    SessionHealth --> FailureDetect
+
+    %% =====================================================
+    %% Failover Workflow
+    %% =====================================================
+
+    subgraph Failover["Automatic Failover"]
+
+        Detect["Detect Failure"]
+        Isolate["Isolate Failed Relay"]
+        Lookup["Locate Healthy Relay"]
+        ReRoute["Update Routing"]
+        Notify["Notify Agents"]
+
+    end
+
+    FailureDetect --> Detect
+    Detect --> Isolate
+    Isolate --> Lookup
+    Lookup --> ReRoute
+    ReRoute --> Notify
+
+    %% =====================================================
+    %% Agent Recovery
+    %% =====================================================
+
+    subgraph Recovery["Agent Recovery"]
+
+        Disconnect["Session Lost"]
+        Rediscover["Relay Discovery"]
+        Reconnect["Reconnect"]
+        Resume["Resume Session"]
+        Sync["State Synchronization"]
+
+    end
+
+    Notify --> Disconnect
+
+    Disconnect --> Rediscover
+    Rediscover --> Reconnect
+    Reconnect --> Resume
+    Resume --> Sync
+
+    Sync --> Router
+
+    %% =====================================================
+    %% Deployment Continuity
+    %% =====================================================
+
+    subgraph Continuity["Deployment Continuity"]
+
+        Queue["Persist In-Flight Tasks"]
+        Retry["Retry Pending Commands"]
+        Continue["Continue Deployment"]
+        Reconcile["Continuous Reconciliation"]
+
+    end
+
+    Resume --> Queue
+    Queue --> Retry
+    Retry --> Continue
+    Continue --> Reconcile
+
+    %% =====================================================
+    %% Disaster Recovery
+    %% =====================================================
+
+    subgraph DR["Regional Disaster Recovery"]
+
+        RegionFailure["Regional Outage"]
+        Promote["Promote Backup Relay"]
+        GlobalRouting["Global Route Update"]
+        RegionalRecovery["Regional Recovery"]
+
+    end
+
+    Detect --> RegionFailure
+    RegionFailure --> Promote
+    Promote --> GlobalRouting
+    GlobalRouting --> Router
+    GlobalRouting --> RegionalRecovery
+
+    %% =====================================================
+    %% Event & Audit Flow
+    %% =====================================================
+
+    subgraph Events["Observability"]
+
+        Audit["Audit Trail"]
+        EventStream["Event Streaming Platform"]
+        Dashboard["Operations Dashboard"]
+        Alerts["Alert Manager"]
+
+    end
+
+    Detect --> Audit
+    Promote --> Audit
+    Resume --> Audit
+    Continue --> Audit
+
+    Audit --> EventStream
+    EventStream --> Dashboard
+    EventStream --> Alerts
+
+    %% =====================================================
+    %% Recovery Objectives
+    %% =====================================================
+
+    Objectives["Recovery Objectives
+
+• Automatic Detection
+• Session Continuity
+• Relay Redundancy
+• Zero Manual Intervention
+• Deployment Continuity
+• State Preservation
+• Continuous Reconciliation
+• Fully Auditable Recovery"]
+
+    Objectives -.-> Failover
+    Objectives -.-> Recovery
+    Objectives -.-> Continuity
+
+    %% =====================================================
+    %% Design Principles
+    %% =====================================================
+
+    Principles["Network Resilience Principles
+
+• Relay Federation
+• No Single Point of Failure
+• Outbound Agent Connections
+• Zero Trust Authentication
+• Automatic Route Selection
+• Health-Based Routing
+• Multi-Region Redundancy
+• Runtime Independent Networking"]
+
+    Principles -.-> Relay
+    Principles -.-> Monitoring
+    Principles -.-> DR
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef relay fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef monitoring fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef recovery fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Scheduler,RelayManager,HealthService,Policy control
+
+    class Router,RelayA,RelayB,RelayC,RelayD relay
+
+    class Heartbeat,Latency,Availability,SessionHealth,FailureDetect,Detect,Isolate,Lookup,ReRoute,Notify monitoring
+
+    class Agent1,Agent2,Agent3,Agent4,Disconnect,Rediscover,Reconnect,Resume,Sync,Queue,Retry,Continue,Reconcile recovery
+
+    class Site1,Site2,Site3,Site4,RegionFailure,Promote,GlobalRouting,RegionalRecovery,Audit,EventStream,Dashboard,Alerts operations
+
+    class Objectives,Principles note

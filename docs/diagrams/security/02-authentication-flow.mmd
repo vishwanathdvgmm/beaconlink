@@ -1,0 +1,273 @@
+---
+title: BeaconLink Authentication Flow
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Authentication Sources
+    %% =====================================================
+
+    subgraph Clients["Authentication Clients"]
+
+        User["Human Operator"]
+        CLI["BeaconLink CLI"]
+        Service["Platform Service"]
+        Agent["BeaconLink Agent"]
+        API["External API"]
+
+    end
+
+    %% =====================================================
+    %% Entry Point
+    %% =====================================================
+
+    subgraph Gateway["Access Layer"]
+
+        APIGateway["API Gateway"]
+        RateLimit["Rate Limiting"]
+        RequestValidation["Request Validation"]
+
+    end
+
+    User --> APIGateway
+    CLI --> APIGateway
+    Service --> APIGateway
+    Agent --> APIGateway
+    API --> APIGateway
+
+    APIGateway --> RateLimit
+    RateLimit --> RequestValidation
+
+    %% =====================================================
+    %% Identity Verification
+    %% =====================================================
+
+    subgraph Identity["Identity Verification"]
+
+        IdP["Identity Provider"]
+
+        MFA["Multi-Factor Authentication"]
+
+        MTLS["Mutual TLS"]
+
+        OIDC["OIDC / OAuth2"]
+
+        Certificate["Certificate Validation"]
+
+    end
+
+    RequestValidation --> IdP
+
+    IdP --> MFA
+    IdP --> OIDC
+    IdP --> MTLS
+
+    MTLS --> Certificate
+
+    %% =====================================================
+    %% Credential Validation
+    %% =====================================================
+
+    subgraph Credentials["Credential Validation"]
+
+        Verify["Verify Credentials"]
+
+        Expiration["Expiration Check"]
+
+        Revocation["Revocation Check"]
+
+        Trust["Trust Evaluation"]
+
+    end
+
+    MFA --> Verify
+    OIDC --> Verify
+    Certificate --> Verify
+
+    Verify --> Expiration
+    Expiration --> Revocation
+    Revocation --> Trust
+
+    %% =====================================================
+    %% Authorization
+    %% =====================================================
+
+    subgraph Authorization["Authorization Pipeline"]
+
+        IdentityContext["Build Identity Context"]
+
+        RBAC["Role-Based Access"]
+
+        ABAC["Attribute-Based Access"]
+
+        Policy["Policy Engine"]
+
+        Decision{"Access Allowed?"}
+
+    end
+
+    Trust --> IdentityContext
+
+    IdentityContext --> RBAC
+    IdentityContext --> ABAC
+
+    RBAC --> Policy
+    ABAC --> Policy
+
+    Policy --> Decision
+
+    %% =====================================================
+    %% Session Management
+    %% =====================================================
+
+    subgraph Session["Secure Session"]
+
+        Token["Issue Short-Lived Token"]
+
+        SessionID["Create Session"]
+
+        Audit["Audit Authentication"]
+
+        Event["Security Event"]
+
+    end
+
+    Decision -->|Yes| Token
+
+    Token --> SessionID
+    SessionID --> Audit
+    Audit --> Event
+
+    %% =====================================================
+    %% Resource Access
+    %% =====================================================
+
+    subgraph Resources["Protected Platform Services"]
+
+        Control["Control Plane"]
+
+        Workflow["Workflow Engine"]
+
+        Scheduler["Distributed Scheduler"]
+
+        Secrets["Secret Management"]
+
+        Relay["Relay Network"]
+
+        Inventory["Inventory Service"]
+
+    end
+
+    SessionID --> Control
+    SessionID --> Workflow
+    SessionID --> Scheduler
+    SessionID --> Secrets
+    SessionID --> Relay
+    SessionID --> Inventory
+
+    %% =====================================================
+    %% Authentication Failure
+    %% =====================================================
+
+    subgraph Failure["Authentication Failure"]
+
+        Reject["Reject Request"]
+
+        Log["Security Audit Log"]
+
+        Alert["Security Alert"]
+
+        Lock["Temporary Lockout"]
+
+    end
+
+    Decision -->|No| Reject
+
+    Reject --> Log
+    Log --> Alert
+    Alert --> Lock
+
+    %% =====================================================
+    %% Continuous Validation
+    %% =====================================================
+
+    subgraph Continuous["Continuous Session Validation"]
+
+        Heartbeat["Heartbeat"]
+
+        TokenCheck["Token Validation"]
+
+        PolicyCheck["Policy Re-Evaluation"]
+
+        Renewal["Credential Renewal"]
+
+    end
+
+    SessionID --> Heartbeat
+
+    Heartbeat --> TokenCheck
+    TokenCheck --> PolicyCheck
+    PolicyCheck --> Renewal
+
+    Renewal --> Trust
+
+    %% =====================================================
+    %% Authentication Methods
+    %% =====================================================
+
+    Methods["Supported Authentication
+
+• OIDC
+• OAuth 2.0
+• SAML
+• LDAP
+• Mutual TLS
+• X.509 Certificates
+• Service Accounts
+• API Tokens
+• Platform Identity"]
+
+    Methods -.-> Identity
+
+    %% =====================================================
+    %% Security Principles
+    %% =====================================================
+
+    Principles["Authentication Principles
+
+• Verify Every Request
+• Identity Before Access
+• Mutual TLS for Services
+• Short-Lived Credentials
+• Continuous Verification
+• Policy-Driven Authorization
+• Complete Audit Trail
+• Zero Trust by Default"]
+
+    Principles -.-> Credentials
+    Principles -.-> Authorization
+    Principles -.-> Continuous
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef client fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef gateway fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef identity fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef authorization fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class User,CLI,Service,Agent,API client
+
+    class APIGateway,RateLimit,RequestValidation gateway
+
+    class IdP,MFA,MTLS,OIDC,Certificate,Verify,Expiration,Revocation,Trust identity
+
+    class IdentityContext,RBAC,ABAC,Policy,Decision,Token,SessionID authorization
+
+    class Control,Workflow,Scheduler,Secrets,Relay,Inventory,Audit,Event,Reject,Log,Alert,Lock,Heartbeat,TokenCheck,PolicyCheck,Renewal security
+
+    class Methods,Principles note

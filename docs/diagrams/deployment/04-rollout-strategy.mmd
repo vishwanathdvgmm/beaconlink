@@ -1,0 +1,232 @@
+---
+title: BeaconLink Deployment Rollout Strategies
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Deployment Request
+    %% =====================================================
+
+    Deployment["Deployment Revision"]
+
+    %% =====================================================
+    %% Strategy Selection
+    %% =====================================================
+
+    Strategy["Deployment Strategy"]
+
+    Deployment --> Strategy
+
+    %% =====================================================
+    %% Strategy Types
+    %% =====================================================
+
+    subgraph Strategies["Supported Rollout Strategies"]
+
+        Rolling["Rolling Update"]
+        BlueGreen["Blue/Green"]
+        Canary["Canary"]
+        Recreate["Recreate"]
+
+    end
+
+    Strategy --> Rolling
+    Strategy --> BlueGreen
+    Strategy --> Canary
+    Strategy --> Recreate
+
+    %% =====================================================
+    %% Rolling Update
+    %% =====================================================
+
+    subgraph RollingFlow["Rolling Update"]
+
+        Batch1["Batch 1"]
+        Verify1["Health Check"]
+
+        Batch2["Batch 2"]
+        Verify2["Health Check"]
+
+        Batch3["Batch N"]
+        CompleteRolling["Complete"]
+
+        Batch1 --> Verify1
+        Verify1 --> Batch2
+        Batch2 --> Verify2
+        Verify2 --> Batch3
+        Batch3 --> CompleteRolling
+
+    end
+
+    Rolling --> Batch1
+
+    %% =====================================================
+    %% Blue Green
+    %% =====================================================
+
+    subgraph BlueGreenFlow["Blue / Green"]
+
+        Blue["Blue Environment"]
+        Green["Green Environment"]
+
+        DeployGreen["Deploy New Version"]
+
+        Validate["Validation"]
+
+        Switch["Traffic Switch"]
+
+        Blue --> DeployGreen
+        DeployGreen --> Green
+        Green --> Validate
+        Validate --> Switch
+
+    end
+
+    BlueGreen --> Blue
+
+    %% =====================================================
+    %% Canary
+    %% =====================================================
+
+    subgraph CanaryFlow["Canary"]
+
+        Five["5%"]
+        Twenty["25%"]
+        Fifty["50%"]
+        Hundred["100%"]
+
+        Five --> Twenty
+        Twenty --> Fifty
+        Fifty --> Hundred
+
+    end
+
+    Canary --> Five
+
+    %% =====================================================
+    %% Recreate
+    %% =====================================================
+
+    subgraph RecreateFlow["Recreate"]
+
+        Stop["Terminate Existing"]
+
+        Deploy["Deploy New"]
+
+        Start["Start Services"]
+
+        Stop --> Deploy
+        Deploy --> Start
+
+    end
+
+    Recreate --> Stop
+
+    %% =====================================================
+    %% Common Validation
+    %% =====================================================
+
+    subgraph ValidationFlow["Validation & Monitoring"]
+
+        Health["Health Checks"]
+        Metrics["Metrics"]
+        Policy["Policy Verification"]
+        Drift["Drift Detection"]
+
+    end
+
+    CompleteRolling --> Health
+    Switch --> Health
+    Hundred --> Health
+    Start --> Health
+
+    Health --> Metrics
+    Metrics --> Policy
+    Policy --> Drift
+
+    %% =====================================================
+    %% Rollback
+    %% =====================================================
+
+    Decision{"Deployment Healthy?"}
+
+    Drift --> Decision
+
+    Decision -->|Yes| Success["Deployment Successful"]
+
+    Decision -->|No| Rollback["Automatic Rollback"]
+
+    Rollback --> Previous["Restore Previous Revision"]
+
+    Previous --> Health
+
+    %% =====================================================
+    %% Audit & Events
+    %% =====================================================
+
+    Audit["Audit Trail"]
+
+    Events["Platform Events"]
+
+    Success --> Audit
+    Rollback --> Audit
+
+    Audit --> Events
+
+    %% =====================================================
+    %% Strategy Selection Factors
+    %% =====================================================
+
+    Factors["Strategy Selection
+
+• Application Type
+• Service Availability
+• Downtime Tolerance
+• Risk Level
+• Environment Size
+• Deployment Policy
+• Resource Capacity
+• Regulatory Requirements"]
+
+    Factors -.-> Strategy
+
+    %% =====================================================
+    %% Principles
+    %% =====================================================
+
+    Principles["Deployment Principles
+
+• Zero-Downtime Preferred
+• Progressive Delivery
+• Automated Validation
+• Health-Gated Promotion
+• Immutable Revisions
+• Automatic Rollback
+• Fully Auditable"]
+
+    Principles -.-> Strategies
+    Principles -.-> ValidationFlow
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef deploy fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef strategy fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef rollout fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef validation fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef outcome fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Deployment deploy
+
+    class Strategy,Rolling,BlueGreen,Canary,Recreate strategy
+
+    class Batch1,Verify1,Batch2,Verify2,Batch3,CompleteRolling,Blue,Green,DeployGreen,Validate,Switch,Five,Twenty,Fifty,Hundred,Stop,Deploy,Start rollout
+
+    class Health,Metrics,Policy,Drift validation
+
+    class Success,Rollback,Previous,Audit,Events,Decision outcome
+
+    class Factors,Principles note

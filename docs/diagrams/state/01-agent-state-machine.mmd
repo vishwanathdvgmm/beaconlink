@@ -1,0 +1,169 @@
+---
+title: BeaconLink Agent State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Initial Bootstrap
+    %% =====================================================
+
+    [*] --> Starting
+
+    Starting : Initialize Process
+    Starting : Load Configuration
+    Starting : Initialize Logging
+    Starting : Initialize Local Storage
+
+    Starting --> LoadingConfiguration
+
+    LoadingConfiguration : Read Bootstrap Config
+    LoadingConfiguration : Load Certificates
+    LoadingConfiguration : Load Runtime Settings
+
+    LoadingConfiguration --> Initializing
+
+    Initializing : Initialize Components
+    Initializing : Runtime Manager
+    Initializing : Plugin Framework
+    Initializing : Relay Client
+
+    %% =====================================================
+    %% Registration Phase
+    %% =====================================================
+
+    Initializing --> ConnectingRelay
+
+    ConnectingRelay : Establish mTLS Connection
+    ConnectingRelay : Authenticate Relay
+
+    ConnectingRelay --> Registering : Connection Established
+    ConnectingRelay --> RetryBackoff : Connection Failed
+
+    Registering : Register with Control Plane
+    Registering : Advertise Capabilities
+    Registering : Publish Runtime Metadata
+
+    Registering --> Synchronizing : Registration Approved
+    Registering --> RegistrationRejected : Registration Failed
+
+    RegistrationRejected : Policy Denied
+    RegistrationRejected : Authentication Failed
+
+    RegistrationRejected --> RetryBackoff
+
+    %% =====================================================
+    %% Initial Synchronization
+    %% =====================================================
+
+    Synchronizing : Download Desired State
+    Synchronizing : Download Policies
+    Synchronizing : Download Configuration
+
+    Synchronizing --> Ready
+
+    %% =====================================================
+    %% Operational States
+    %% =====================================================
+
+    state Ready {
+
+        [*] --> Idle
+
+        Idle : Waiting for Events
+        Idle : Heartbeats
+        Idle : Observe Desired State
+
+        Idle --> Reconciling : Desired State Changed
+        Idle --> ExecutingWorkflow : Workflow Assigned
+        Idle --> SecretResolution : Secret Required
+        Idle --> Updating : Agent Upgrade
+        Idle --> Degraded : Runtime Warning
+
+        Reconciling : Continuous Reconciliation
+        Reconciling : Drift Detection
+        Reconciling : State Comparison
+
+        Reconciling --> Deploying : Changes Required
+        Reconciling --> Idle : State Converged
+
+        Deploying : Execute Deployment
+        Deploying : Apply Immutable Revision
+
+        Deploying --> Verifying
+
+        Verifying : Health Validation
+        Verifying : Runtime Verification
+
+        Verifying --> Idle : Successful
+        Verifying --> Rollback : Verification Failed
+
+        Rollback : Restore Previous Revision
+
+        Rollback --> Idle
+        Rollback --> Failed : Rollback Failed
+
+        ExecutingWorkflow : Execute Workflow Task
+        ExecutingWorkflow --> Idle : Completed
+        ExecutingWorkflow --> Failed : Workflow Failed
+
+        SecretResolution : Resolve Secrets
+        SecretResolution --> Idle : Secrets Available
+        SecretResolution --> Failed : Resolution Failed
+
+        Updating : Self Update
+        Updating --> Restarting
+
+        Degraded : Partial Functionality
+        Degraded --> Idle : Recovered
+        Degraded --> Failed : Critical Failure
+
+    }
+
+    %% =====================================================
+    %% Maintenance States
+    %% =====================================================
+
+    Restarting : Restart Agent
+    Restarting --> Starting
+
+    RetryBackoff : Exponential Backoff
+    RetryBackoff --> ConnectingRelay
+
+    %% =====================================================
+    %% Failure States
+    %% =====================================================
+
+    Failed : Agent Unable to Continue
+    Failed : Await Recovery
+    Failed : Emit Failure Events
+
+    Failed --> Restarting : Automatic Recovery
+    Failed --> ShuttingDown : Stop Requested
+
+    %% =====================================================
+    %% Shutdown
+    %% =====================================================
+
+    ShuttingDown : Stop Heartbeats
+    ShuttingDown : Finish Active Tasks
+    ShuttingDown : Cleanup Secrets
+    ShuttingDown : Close Runtime Connections
+
+    ShuttingDown --> Terminated
+
+    Terminated : Process Exited
+
+    Terminated --> [*]
+
+    %% =====================================================
+    %% Global Transitions
+    %% =====================================================
+
+    Ready --> ShuttingDown : Graceful Shutdown
+    ConnectingRelay --> ShuttingDown : Stop Requested
+    RetryBackoff --> ShuttingDown : Stop Requested
+    Synchronizing --> ShuttingDown : Stop Requested
+    Initializing --> ShuttingDown : Stop Requested
+    Starting --> ShuttingDown : Stop Requested

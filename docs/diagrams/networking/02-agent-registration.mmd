@@ -1,0 +1,214 @@
+---
+title: BeaconLink Agent Registration Workflow
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Agent Bootstrap
+    %% =====================================================
+
+    subgraph Bootstrap["Agent Bootstrap"]
+
+        Install["Install BeaconLink Agent"]
+        Config["Bootstrap Configuration"]
+        Identity["Agent Identity"]
+        Start["Agent Startup"]
+
+    end
+
+    Install --> Config
+    Config --> Identity
+    Identity --> Start
+
+    %% =====================================================
+    %% Initial Connection
+    %% =====================================================
+
+    subgraph Connection["Secure Relay Connection"]
+
+        Discover["Discover Relay"]
+        TLS["Mutual TLS Handshake"]
+        Authenticate["Authenticate"]
+        Session["Establish Secure Session"]
+
+    end
+
+    Start --> Discover
+    Discover --> TLS
+    TLS --> Authenticate
+    Authenticate --> Session
+
+    %% =====================================================
+    %% Registration Service
+    %% =====================================================
+
+    subgraph Control["Control Plane Registration"]
+
+        Gateway["API Gateway"]
+        Registry["Agent Registry"]
+        IdentityService["Identity Service"]
+        Certificate["Certificate Authority"]
+
+    end
+
+    Session --> Gateway
+    Gateway --> IdentityService
+    IdentityService --> Registry
+    IdentityService --> Certificate
+
+    %% =====================================================
+    %% Registration Exchange
+    %% =====================================================
+
+    subgraph Registration["Registration Process"]
+
+        Metadata["Agent Metadata
+
+• Agent ID
+• Version
+• Platform
+• Architecture
+• Runtime Capabilities
+• Labels
+• Site Information"]
+
+        Validate["Validate Registration"]
+        Approve["Registration Approved"]
+        Credentials["Issue Credentials"]
+
+    end
+
+    Registry --> Metadata
+    Metadata --> Validate
+    Validate --> Approve
+    Approve --> Credentials
+
+    %% =====================================================
+    %% Capability Discovery
+    %% =====================================================
+
+    subgraph Discovery["Capability Discovery"]
+
+        Runtime["Runtime Detection"]
+        Plugins["Plugin Discovery"]
+        Resources["Resource Discovery"]
+        Inventory["Inventory Update"]
+
+    end
+
+    Credentials --> Runtime
+    Runtime --> Plugins
+    Plugins --> Resources
+    Resources --> Inventory
+
+    %% =====================================================
+    %% Operational State
+    %% =====================================================
+
+    subgraph Operations["Operational State"]
+
+        Online["Agent Online"]
+        Heartbeat["Heartbeat"]
+        Status["Status Updates"]
+        Metrics["Metrics"]
+        Events["Platform Events"]
+
+    end
+
+    Inventory --> Online
+
+    Online --> Heartbeat
+    Online --> Status
+    Online --> Metrics
+
+    Heartbeat --> Events
+    Status --> Events
+    Metrics --> Events
+
+    %% =====================================================
+    %% Continuous Lifecycle
+    %% =====================================================
+
+    Heartbeat -. Periodic .-> Registry
+    Status -. Continuous .-> Registry
+    Metrics -. Streaming .-> Registry
+
+    %% =====================================================
+    %% Failure Handling
+    %% =====================================================
+
+    subgraph Failure["Failure Scenarios"]
+
+        Retry["Retry Registration"]
+        Expired["Credential Rotation"]
+        Offline["Agent Offline"]
+        Reconnect["Reconnect"]
+
+    end
+
+    Authenticate -->|Failure| Retry
+    Retry --> Discover
+
+    Certificate --> Expired
+    Expired --> TLS
+
+    Heartbeat --> Offline
+    Offline --> Reconnect
+    Reconnect --> Discover
+
+    %% =====================================================
+    %% Security Principles
+    %% =====================================================
+
+    Security["Security Principles
+
+• Mutual TLS
+• Zero Trust
+• Outbound Connections Only
+• Short-Lived Credentials
+• Certificate Rotation
+• Identity Verification
+• Capability Validation
+• Fully Auditable Registration"]
+
+    Security -.-> Connection
+    Security -.-> Registration
+
+    %% =====================================================
+    %% Registration Outcomes
+    %% =====================================================
+
+    Outcomes["Registration Results
+
+• Trusted Identity
+• Runtime Inventory
+• Capability Catalog
+• Site Association
+• Secure Communication
+• Deployment Eligibility"]
+
+    Outcomes -.-> Operations
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef bootstrap fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef network fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef control fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef discovery fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Install,Config,Identity,Start bootstrap
+
+    class Discover,TLS,Authenticate,Session network
+
+    class Gateway,Registry,IdentityService,Certificate,Metadata,Validate,Approve,Credentials control
+
+    class Runtime,Plugins,Resources,Inventory discovery
+
+    class Online,Heartbeat,Status,Metrics,Events,Retry,Expired,Offline,Reconnect operations
+
+    class Security,Outcomes note

@@ -1,0 +1,117 @@
+---
+title: BeaconLink Agent Bootstrap Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Admin as Platform Operator
+    participant CP as BeaconLink Control Plane
+    participant Policy as Policy Engine
+    participant PKI as Certificate Authority
+    participant Relay as Relay Network
+    participant Agent as BeaconLink Agent
+    participant Runtime as Runtime Manager
+    participant Adapter as Runtime Adapter
+    participant Inventory as Inventory Service
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Bootstrap Request
+    %% =====================================================
+
+    Admin->>CP: Register new managed site
+    CP->>Policy: Validate bootstrap request
+    Policy-->>CP: Authorization approved
+
+    %% =====================================================
+    %% Identity Provisioning
+    %% =====================================================
+
+    CP->>PKI: Request agent identity
+    PKI-->>CP: Issue X.509 certificate
+    CP->>CP: Generate bootstrap token
+    CP->>Audit: Record identity issuance
+
+    %% =====================================================
+    %% Agent Startup
+    %% =====================================================
+
+    Note over Agent: Agent installed at managed site
+
+    Agent->>Agent: Load configuration
+    Agent->>Agent: Initialize secure storage
+    Agent->>Runtime: Detect runtime environment
+    Runtime->>Adapter: Discover runtime capabilities
+    Adapter-->>Runtime: Capability inventory
+    Runtime-->>Agent: Runtime information
+
+    %% =====================================================
+    %% Secure Registration
+    %% =====================================================
+
+    Agent->>Relay: Establish outbound mTLS connection
+    Relay-->>Agent: Secure session established
+
+    Agent->>CP: Present bootstrap token + certificate
+    CP->>PKI: Validate certificate
+    PKI-->>CP: Certificate trusted
+
+    CP->>Policy: Evaluate registration policy
+    Policy-->>CP: Registration approved
+
+    %% =====================================================
+    %% Inventory Synchronization
+    %% =====================================================
+
+    CP->>Inventory: Create managed site
+    Agent->>Inventory: Publish capabilities
+    Agent->>Inventory: Publish runtime inventory
+    Inventory-->>CP: Site inventory updated
+
+    %% =====================================================
+    %% Initial Configuration
+    %% =====================================================
+
+    CP->>Agent: Deliver desired state
+    CP->>Agent: Deliver policies
+    CP->>Agent: Deliver relay configuration
+
+    Agent->>Agent: Persist desired state
+    Agent->>Agent: Configure reconciliation loop
+
+    %% =====================================================
+    %% Runtime Preparation
+    %% =====================================================
+
+    Agent->>Runtime: Initialize runtime manager
+    Runtime->>Adapter: Load runtime adapter
+    Adapter-->>Runtime: Runtime ready
+    Runtime-->>Agent: Runtime initialized
+
+    %% =====================================================
+    %% Operational Readiness
+    %% =====================================================
+
+    Agent->>CP: Registration complete
+    CP->>Events: Publish AgentRegistered
+    CP->>Audit: Record successful bootstrap
+
+    loop Continuous Operation
+
+        Agent->>Relay: Heartbeat
+        Relay->>CP: Forward heartbeat
+
+        CP->>Policy: Continuous policy validation
+        Policy-->>CP: Authorized
+
+        CP-->>Agent: Desired state updates (if changed)
+
+    end
+
+    %% =====================================================
+    %% Result
+    %% =====================================================
+
+    Note over Admin,Agent: BeaconLink Agent is now fully registered,<br/>authenticated, continuously reconciled,<br/>and ready to execute deployments.

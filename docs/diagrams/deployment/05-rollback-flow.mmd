@@ -1,0 +1,212 @@
+---
+title: BeaconLink Deployment Rollback Flow
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Deployment Execution
+    %% =====================================================
+
+    Deployment["Deployment Revision"]
+
+    Execution["Deployment Execution"]
+
+    Deployment --> Execution
+
+    %% =====================================================
+    %% Validation
+    %% =====================================================
+
+    subgraph Validation["Post-Deployment Validation"]
+
+        Health["Health Checks"]
+        Readiness["Readiness Verification"]
+        Metrics["Performance Metrics"]
+        Policies["Policy Compliance"]
+        Drift["Drift Detection"]
+
+    end
+
+    Execution --> Health
+    Health --> Readiness
+    Readiness --> Metrics
+    Metrics --> Policies
+    Policies --> Drift
+
+    %% =====================================================
+    %% Decision
+    %% =====================================================
+
+    Decision{"Deployment Healthy?"}
+
+    Drift --> Decision
+
+    %% =====================================================
+    %% Success Path
+    %% =====================================================
+
+    subgraph Success["Successful Deployment"]
+
+        Promote["Promote Revision"]
+        Inventory["Update Inventory"]
+        AuditSuccess["Audit Success"]
+        EventsSuccess["Publish Success Events"]
+
+    end
+
+    Decision -->|Yes| Promote
+
+    Promote --> Inventory
+    Inventory --> AuditSuccess
+    AuditSuccess --> EventsSuccess
+
+    %% =====================================================
+    %% Rollback Path
+    %% =====================================================
+
+    subgraph Rollback["Rollback Process"]
+
+        Detect["Failure Detected"]
+
+        Freeze["Freeze Rollout"]
+
+        Select["Select Previous Stable Revision"]
+
+        Generate["Generate Rollback Plan"]
+
+        Dispatch["Dispatch Rollback Tasks"]
+
+    end
+
+    Decision -->|No| Detect
+
+    Detect --> Freeze
+    Freeze --> Select
+    Select --> Generate
+    Generate --> Dispatch
+
+    %% =====================================================
+    %% Execution
+    %% =====================================================
+
+    subgraph ExecutionFlow["Rollback Execution"]
+
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+        Runtime["Runtime Adapter"]
+        Restore["Restore Previous State"]
+
+    end
+
+    Dispatch --> Relay
+    Relay --> Agent
+    Agent --> Runtime
+    Runtime --> Restore
+
+    %% =====================================================
+    %% Verification
+    %% =====================================================
+
+    subgraph Verification["Rollback Verification"]
+
+        Verify["Health Verification"]
+        Confirm["State Verification"]
+        Reconcile["Reconciliation"]
+
+    end
+
+    Restore --> Verify
+    Verify --> Confirm
+    Confirm --> Reconcile
+
+    %% =====================================================
+    %% Completion
+    %% =====================================================
+
+    RollbackDecision{"Rollback Successful?"}
+
+    Reconcile --> RollbackDecision
+
+    RollbackComplete["Rollback Complete"]
+
+    Manual["Manual Intervention"]
+
+    RollbackDecision -->|Yes| RollbackComplete
+
+    RollbackDecision -->|No| Manual
+
+    %% =====================================================
+    %% Audit & Events
+    %% =====================================================
+
+    Audit["Audit Log"]
+
+    Events["Platform Events"]
+
+    RollbackComplete --> Audit
+    Manual --> Audit
+
+    Audit --> Events
+
+    %% =====================================================
+    %% Continuous Reconciliation
+    %% =====================================================
+
+    Events --> Reconcile
+
+    %% =====================================================
+    %% Rollback Triggers
+    %% =====================================================
+
+    Triggers["Automatic Rollback Triggers
+
+• Health Check Failure
+• Readiness Failure
+• Policy Violation
+• Runtime Failure
+• Drift Beyond Threshold
+• Deployment Timeout
+• Operator Cancellation"]
+
+    Triggers -.-> Detect
+
+    %% =====================================================
+    %% Principles
+    %% =====================================================
+
+    Principles["Rollback Principles
+
+• Immutable Revisions
+• Automated Recovery
+• Idempotent Operations
+• Health-Gated Decisions
+• Runtime Independent
+• Fully Auditable
+• Continuous Reconciliation"]
+
+    Principles -.-> Rollback
+    Principles -.-> Verification
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef deployment fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef validation fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef rollback fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef execution fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef completion fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Deployment,Execution deployment
+
+    class Health,Readiness,Metrics,Policies,Drift,Decision validation
+
+    class Detect,Freeze,Select,Generate,Dispatch rollback
+
+    class Relay,Agent,Runtime,Restore,Verify,Confirm,Reconcile execution
+
+    class Promote,Inventory,AuditSuccess,EventsSuccess,RollbackComplete,Manual,RollbackDecision,Audit,Events completion
+
+    class Triggers,Principles note

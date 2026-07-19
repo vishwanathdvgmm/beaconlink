@@ -1,0 +1,184 @@
+---
+title: BeaconLink Continuous Reconciliation Loop
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Desired State
+    %% =====================================================
+
+    subgraph Desired["Desired State"]
+
+        Manifest["Site Manifest"]
+        Config["Configuration"]
+        Policies["Policies"]
+        Secrets["Secret References"]
+
+    end
+
+    %% =====================================================
+    %% Planning
+    %% =====================================================
+
+    subgraph Planning["Planning"]
+
+        Planner["Deployment Planner"]
+        DesiredModel["Desired State Model"]
+
+    end
+
+    Manifest --> Planner
+    Config --> Planner
+    Policies --> Planner
+    Secrets --> Planner
+
+    Planner --> DesiredModel
+
+    %% =====================================================
+    %% Observation
+    %% =====================================================
+
+    subgraph Observation["Observed State"]
+
+        Inventory["Inventory"]
+        Health["Health Status"]
+        Runtime["Runtime State"]
+        Metrics["Metrics"]
+
+    end
+
+    %% =====================================================
+    %% Reconciliation
+    %% =====================================================
+
+    subgraph Reconcile["Reconciliation Engine"]
+
+        Compare["State Comparison"]
+        Drift["Drift Detection"]
+        Decision["Reconciliation Decision"]
+
+    end
+
+    DesiredModel --> Compare
+
+    Inventory --> Compare
+    Health --> Compare
+    Runtime --> Compare
+    Metrics --> Compare
+
+    Compare --> Drift
+    Drift --> Decision
+
+    %% =====================================================
+    %% Execution
+    %% =====================================================
+
+    subgraph Execution["Execution"]
+
+        Task["Deployment Task"]
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+        RuntimeAdapter["Runtime Adapter"]
+
+    end
+
+    Decision --> Task
+
+    Task --> Relay
+    Relay --> Agent
+    Agent --> RuntimeAdapter
+
+    %% =====================================================
+    %% Runtime
+    %% =====================================================
+
+    subgraph Infrastructure["Managed Infrastructure"]
+
+        Workloads["Running Workloads"]
+
+    end
+
+    RuntimeAdapter --> Workloads
+
+    %% =====================================================
+    %% Feedback
+    %% =====================================================
+
+    Workloads --> Inventory
+    Workloads --> Health
+    Workloads --> Runtime
+    Workloads --> Metrics
+
+    %% =====================================================
+    %% Event Platform
+    %% =====================================================
+
+    subgraph Events["Event Platform"]
+
+        EventBus["Event Streaming"]
+        Audit["Audit Service"]
+        Dashboard["Dashboard"]
+        Workflow["Workflow Engine"]
+
+    end
+
+    Decision --> EventBus
+
+    EventBus --> Audit
+    EventBus --> Dashboard
+    EventBus --> Workflow
+
+    %% =====================================================
+    %% Continuous Loop
+    %% =====================================================
+
+    Decision -. No Drift .-> Inventory
+
+    Decision -. Drift Detected .-> Task
+
+    %% =====================================================
+    %% Principles
+    %% =====================================================
+
+    Principles["Reconciliation Principles
+
+• Desired State is Authoritative
+• Continuous Observation
+• Drift Detection
+• Idempotent Operations
+• Event-Driven Feedback
+• Runtime Independence
+• Self-Healing
+• Eventually Consistent"]
+
+    Principles -.-> Desired
+    Principles -.-> Reconcile
+    Principles -.-> Execution
+    Principles -.-> Observation
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef desired fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef observe fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef reconcile fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef execute fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef infra fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef events fill:#E0F2F1,stroke:#00695C,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Manifest,Config,Policies,Secrets,Planner,DesiredModel desired
+
+    class Inventory,Health,Runtime,Metrics observe
+
+    class Compare,Drift,Decision reconcile
+
+    class Task,Relay,Agent,RuntimeAdapter execute
+
+    class Workloads infra
+
+    class EventBus,Audit,Dashboard,Workflow events
+
+    class Principles note

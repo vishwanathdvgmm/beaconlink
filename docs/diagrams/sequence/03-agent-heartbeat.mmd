@@ -1,0 +1,153 @@
+---
+title: BeaconLink Agent Heartbeat Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Agent as BeaconLink Agent
+    participant Runtime as Runtime Manager
+    participant Adapter as Runtime Adapter
+    participant Relay as Relay Network
+    participant Gateway as API Gateway
+    participant Control as BeaconLink Control Plane
+    participant Policy as Policy Engine
+    participant Inventory as Inventory Service
+    participant Scheduler as Distributed Scheduler
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Heartbeat Preparation
+    %% =====================================================
+
+    Note over Agent: Continuous reconciliation loop triggers heartbeat
+
+    Agent->>Runtime: Collect runtime status
+    Runtime->>Adapter: Query runtime health
+    Adapter-->>Runtime: Runtime metrics
+
+    Runtime-->>Agent: Runtime summary
+
+    Agent->>Agent: Collect local metrics
+    Agent->>Agent: Collect reconciliation status
+    Agent->>Agent: Collect deployment status
+
+    %% =====================================================
+    %% Secure Transmission
+    %% =====================================================
+
+    Agent->>Relay: Send heartbeat (mTLS)
+
+    Note right of Agent: Includes:\n• Agent ID\n• Current Revision\n• Runtime Health\n• Resource Usage\n• Active Deployments\n• Reconciliation Status\n• Timestamp
+
+    Relay->>Gateway: Forward heartbeat
+    Gateway->>Control: Deliver heartbeat
+
+    %% =====================================================
+    %% Identity Validation
+    %% =====================================================
+
+    Control->>Policy: Validate active identity
+    Policy-->>Control: Identity trusted
+
+    %% =====================================================
+    %% State Update
+    %% =====================================================
+
+    Control->>Inventory: Update agent health
+    Control->>Inventory: Update runtime metrics
+    Control->>Inventory: Update capacity
+    Inventory-->>Control: Inventory updated
+
+    %% =====================================================
+    %% Scheduler Synchronization
+    %% =====================================================
+
+    Control->>Scheduler: Refresh execution capacity
+    Scheduler-->>Control: Scheduling state updated
+
+    %% =====================================================
+    %% Drift Detection
+    %% =====================================================
+
+    Control->>Control: Compare desired vs actual state
+
+    alt Drift Detected
+
+        Control->>Events: Publish DriftDetected
+        Control->>Agent: Reconciliation required
+
+    else No Drift
+
+        Note over Control: Desired state satisfied
+
+    end
+
+    %% =====================================================
+    %% Desired State Check
+    %% =====================================================
+
+    Control->>Control: Check for new revisions
+
+    alt New Desired State Available
+
+        Control->>Agent: Deliver updated desired state
+        Agent->>Agent: Persist revision
+        Agent->>Agent: Begin reconciliation
+
+    else No Updates
+
+        Control-->>Agent: Heartbeat acknowledged
+
+    end
+
+    %% =====================================================
+    %% Health Monitoring
+    %% =====================================================
+
+    Control->>Control: Evaluate health thresholds
+
+    alt Agent Unhealthy
+
+        Control->>Events: Publish AgentUnhealthy
+        Control->>Audit: Record health degradation
+
+    else Agent Healthy
+
+        Control->>Audit: Record successful heartbeat
+
+    end
+
+    %% =====================================================
+    %% Continuous Loop
+    %% =====================================================
+
+    loop Every Heartbeat Interval
+
+        Agent->>Runtime: Refresh runtime status
+        Runtime-->>Agent: Updated metrics
+
+        Agent->>Relay: Next heartbeat
+        Relay->>Control: Forward heartbeat
+
+        Control->>Policy: Continuous authorization
+        Policy-->>Control: Authorized
+
+    end
+
+    %% =====================================================
+    %% Timeout Handling
+    %% =====================================================
+
+    alt Heartbeat Timeout
+
+        Control->>Events: Publish AgentOffline
+        Control->>Scheduler: Remove execution capacity
+        Control->>Audit: Record heartbeat timeout
+
+    else Heartbeats Continue
+
+        Note over Agent,Control: Agent remains healthy,<br/>trusted, and continuously synchronized.
+
+    end

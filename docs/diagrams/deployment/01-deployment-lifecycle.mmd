@@ -1,0 +1,183 @@
+---
+title: BeaconLink Deployment Lifecycle
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Authoring
+    %% =====================================================
+
+    subgraph Authoring["1. Authoring"]
+
+        Manifest["Site Manifest"]
+        Config["Configuration"]
+        Secrets["Secret References"]
+        Policies["Policies"]
+
+    end
+
+    %% =====================================================
+    %% Validation
+    %% =====================================================
+
+    subgraph Validation["2. Validation"]
+
+        Schema["Schema Validation"]
+        PolicyValidation["Policy Evaluation"]
+        Dependency["Dependency Validation"]
+
+    end
+
+    Manifest --> Schema
+    Config --> Schema
+    Secrets --> Schema
+
+    Schema --> PolicyValidation
+    PolicyValidation --> Dependency
+
+    %% =====================================================
+    %% Planning
+    %% =====================================================
+
+    subgraph Planning["3. Planning"]
+
+        Planner["Deployment Planner"]
+        Diff["Desired vs Actual Diff"]
+        Strategy["Deployment Strategy"]
+        Revision["Immutable Revision"]
+
+    end
+
+    Dependency --> Planner
+
+    Planner --> Diff
+    Diff --> Strategy
+    Strategy --> Revision
+
+    %% =====================================================
+    %% Scheduling
+    %% =====================================================
+
+    subgraph Scheduling["4. Scheduling"]
+
+        Scheduler["Distributed Scheduler"]
+        Queue["Deployment Queue"]
+        Assignment["Agent Assignment"]
+
+    end
+
+    Revision --> Scheduler
+
+    Scheduler --> Queue
+    Queue --> Assignment
+
+    %% =====================================================
+    %% Execution
+    %% =====================================================
+
+    subgraph Execution["5. Execution"]
+
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+        Runtime["Runtime Adapter"]
+        Workload["Runtime Execution"]
+
+    end
+
+    Assignment --> Relay
+
+    Relay --> Agent
+    Agent --> Runtime
+    Runtime --> Workload
+
+    %% =====================================================
+    %% Verification
+    %% =====================================================
+
+    subgraph Verification["6. Verification"]
+
+        Health["Health Verification"]
+        Inventory["Inventory Update"]
+        Drift["Drift Detection"]
+
+    end
+
+    Workload --> Health
+
+    Health --> Inventory
+    Inventory --> Drift
+
+    %% =====================================================
+    %% Completion
+    %% =====================================================
+
+    subgraph Completion["7. Completion"]
+
+        Success["Deployment Complete"]
+        Rollback["Automatic Rollback"]
+        Audit["Audit Record"]
+        Events["Platform Events"]
+
+    end
+
+    Drift --> Success
+
+    Drift -. Drift Detected .-> Rollback
+
+    Success --> Audit
+    Rollback --> Audit
+
+    Audit --> Events
+
+    %% =====================================================
+    %% Continuous Reconciliation
+    %% =====================================================
+
+    Events --> Planner
+
+    %% =====================================================
+    %% Lifecycle Principles
+    %% =====================================================
+
+    Principles["Deployment Principles
+
+• Declarative
+• Immutable Revisions
+• Continuous Reconciliation
+• Policy-Driven
+• Runtime Independent
+• Secure Relay Delivery
+• Automatic Rollback
+• Full Audit Trail"]
+
+    Principles -.-> Authoring
+    Principles -.-> Planning
+    Principles -.-> Execution
+    Principles -.-> Verification
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef author fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef validation fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef planning fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef execution fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef verify fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef complete fill:#E0F2F1,stroke:#00695C,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Manifest,Config,Secrets,Policies author
+
+    class Schema,PolicyValidation,Dependency validation
+
+    class Planner,Diff,Strategy,Revision,Scheduler,Queue,Assignment planning
+
+    class Relay,Agent,Runtime,Workload execution
+
+    class Health,Inventory,Drift verify
+
+    class Success,Rollback,Audit,Events complete
+
+    class Principles note

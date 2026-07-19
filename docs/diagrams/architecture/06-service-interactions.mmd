@@ -1,0 +1,159 @@
+---
+title: BeaconLink Service Interactions
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Client Layer
+    %% =====================================================
+
+    User["Administrator / API Client"]
+
+    %% =====================================================
+    %% Presentation Layer
+    %% =====================================================
+
+    Console["BeaconLink Console"]
+    Gateway["API Gateway"]
+
+    User --> Console
+    User --> Gateway
+
+    Console --> Gateway
+
+    %% =====================================================
+    %% Core Services
+    %% =====================================================
+
+    subgraph ControlPlane["Control Plane"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+        Secrets["Secret Management"]
+        Plugins["Plugin Manager"]
+
+    end
+
+    Gateway --> Deploy
+    Gateway --> Workflow
+    Gateway --> Policy
+    Gateway --> Scheduler
+
+    %% =====================================================
+    %% Shared Platform Services
+    %% =====================================================
+
+    subgraph Platform["Shared Platform Services"]
+
+        Events["Event Streaming Platform"]
+        Metadata["Metadata Store"]
+        Config["Configuration Store"]
+        Audit["Audit Log"]
+        Observability["Observability"]
+
+    end
+
+    %% =====================================================
+    %% Relay Layer
+    %% =====================================================
+
+    Relay["Relay Cluster"]
+
+    %% =====================================================
+    %% Managed Infrastructure
+    %% =====================================================
+
+    subgraph Site["Managed Site"]
+
+        Agent["BeaconLink Agent"]
+
+        Runtime["Runtime Manager"]
+
+        Inventory["Inventory Service"]
+
+        Health["Health Monitor"]
+
+    end
+
+    %% =====================================================
+    %% Service Collaboration
+    %% =====================================================
+
+    Deploy --> Policy
+    Deploy --> Workflow
+    Deploy --> Secrets
+    Deploy --> Plugins
+
+    Workflow --> Scheduler
+    Workflow --> Policy
+
+    Scheduler --> Workflow
+
+    %% =====================================================
+    %% Shared Persistence
+    %% =====================================================
+
+    Deploy --> Metadata
+    Workflow --> Metadata
+    Policy --> Metadata
+    Scheduler --> Metadata
+
+    Deploy --> Config
+    Workflow --> Config
+    Policy --> Config
+
+    %% =====================================================
+    %% Event-Driven Communication
+    %% =====================================================
+
+    Deploy -. Publishes Events .-> Events
+    Workflow -. Publishes Events .-> Events
+    Policy -. Publishes Events .-> Events
+    Scheduler -. Publishes Events .-> Events
+    Secrets -. Publishes Events .-> Events
+    Plugins -. Publishes Events .-> Events
+
+    Events -. Consumed By .-> Deploy
+    Events -. Consumed By .-> Workflow
+    Events -. Consumed By .-> Policy
+    Events -. Consumed By .-> Scheduler
+
+    Events --> Audit
+    Events --> Observability
+
+    %% =====================================================
+    %% Infrastructure Communication
+    %% =====================================================
+
+    Events --> Relay
+
+    Relay <-->|Persistent TLS| Agent
+
+    Agent --> Runtime
+    Agent --> Inventory
+    Agent --> Health
+
+    Runtime --> Events
+    Inventory --> Events
+    Health --> Events
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef client fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef gateway fill:#FFF3E0,stroke:#EF6C00,color:#000;
+    classDef service fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef platform fill:#EDE7F6,stroke:#5E35B1,color:#000;
+    classDef relay fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef agent fill:#FCE4EC,stroke:#C2185B,color:#000;
+
+    class User client
+    class Console,Gateway gateway
+    class Deploy,Workflow,Policy,Scheduler,Secrets,Plugins service
+    class Events,Metadata,Config,Audit,Observability platform
+    class Relay relay
+    class Agent,Runtime,Inventory,Health agent

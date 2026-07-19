@@ -1,0 +1,194 @@
+---
+title: BeaconLink Deployment State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Deployment Creation
+    %% =====================================================
+
+    [*] --> Created
+
+    Created : Deployment Requested
+    Created : Immutable Revision Created
+    Created : Metadata Recorded
+
+    Created --> Validating
+
+    %% =====================================================
+    %% Validation Phase
+    %% =====================================================
+
+    Validating : Validate Manifest
+    Validating : Validate Schema
+    Validating : Validate Dependencies
+
+    Validating --> PolicyEvaluation : Validation Passed
+    Validating --> Failed : Validation Failed
+
+    PolicyEvaluation : RBAC Verification
+    PolicyEvaluation : Compliance Checks
+    PolicyEvaluation : Placement Policies
+
+    PolicyEvaluation --> Planning : Authorized
+    PolicyEvaluation --> Rejected : Policy Denied
+
+    Rejected : Deployment Rejected
+    Rejected : Await User Action
+
+    Rejected --> [*]
+
+    %% =====================================================
+    %% Planning Phase
+    %% =====================================================
+
+    Planning : Build Execution Plan
+    Planning : Resolve Dependencies
+    Planning : Determine Execution Graph
+
+    Planning --> Scheduling
+
+    Scheduling : Capability-Based Scheduling
+    Scheduling : Select Target Agents
+    Scheduling : Reserve Capacity
+
+    Scheduling --> Dispatching : Targets Selected
+    Scheduling --> Waiting : Capacity Unavailable
+
+    Waiting : Await Available Capacity
+    Waiting --> Scheduling : Resources Available
+    Waiting --> Cancelled : Cancel Requested
+
+    %% =====================================================
+    %% Dispatch Phase
+    %% =====================================================
+
+    Dispatching : Deliver Desired State
+    Dispatching : Send Immutable Revision
+
+    Dispatching --> Executing
+
+    %% =====================================================
+    %% Runtime Execution
+    %% =====================================================
+
+    state Executing {
+
+        [*] --> Preparing
+
+        Preparing : Resolve Secrets
+        Preparing : Download Artifacts
+        Preparing : Verify Runtime
+
+        Preparing --> Applying
+
+        Applying : Apply Desired State
+        Applying : Runtime Translation
+        Applying : Resource Creation
+
+        Applying --> Verifying
+
+        Verifying : Health Checks
+        Verifying : Readiness Checks
+        Verifying : State Validation
+
+        Verifying --> Running : Deployment Healthy
+        Verifying --> Retrying : Recoverable Failure
+        Verifying --> Rollback : Verification Failed
+
+        Retrying : Retry Deployment
+
+        Retrying --> Applying
+        Retrying --> Rollback : Retry Limit Exceeded
+
+        Rollback : Restore Previous Revision
+
+        Rollback --> Failed : Rollback Failed
+        Rollback --> RolledBack : Rollback Successful
+
+        Running : Desired State Achieved
+
+        Running --> [*]
+
+    }
+
+    %% =====================================================
+    %% Successful Deployment
+    %% =====================================================
+
+    Executing --> Completed
+
+    Completed : Deployment Successful
+    Completed : Inventory Updated
+    Completed : Events Published
+
+    Completed --> Monitoring
+
+    %% =====================================================
+    %% Continuous Operation
+    %% =====================================================
+
+    Monitoring : Continuous Reconciliation
+    Monitoring : Drift Detection
+    Monitoring : Health Monitoring
+
+    Monitoring --> Reconciling : Drift Detected
+    Monitoring --> Scaling : Scaling Requested
+    Monitoring --> Updating : New Revision
+    Monitoring --> Deleting : Delete Requested
+
+    Reconciling : Restore Desired State
+
+    Reconciling --> Monitoring
+
+    Scaling : Scale Workload
+
+    Scaling --> Monitoring
+
+    Updating : Deploy New Revision
+
+    Updating --> Dispatching
+
+    %% =====================================================
+    %% Deletion Lifecycle
+    %% =====================================================
+
+    Deleting : Graceful Termination
+    Deleting : Remove Resources
+
+    Deleting --> Deleted
+
+    Deleted : Deployment Removed
+
+    Deleted --> [*]
+
+    %% =====================================================
+    %% Failure States
+    %% =====================================================
+
+    RolledBack : Previous Revision Active
+
+    RolledBack --> Monitoring
+    RolledBack --> Updating : New Revision
+
+    Failed : Deployment Failed
+    Failed : Await Operator Action
+
+    Failed --> Rollback
+    Failed --> Updating
+    Failed --> Cancelled
+
+    Cancelled : Deployment Cancelled
+
+    Cancelled --> [*]
+
+    %% =====================================================
+    %% Global Transitions
+    %% =====================================================
+
+    Monitoring --> Failed : Runtime Failure
+    Executing --> Failed : Critical Error
+    Dispatching --> Failed : Communication Failure
+    Scheduling --> Failed : Scheduler Failure

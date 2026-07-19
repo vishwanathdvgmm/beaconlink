@@ -1,0 +1,247 @@
+---
+title: BeaconLink Global Relay Federation
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Global Control Plane
+    %% =====================================================
+
+    subgraph Control["Global BeaconLink Control Plane"]
+
+        API["API Gateway"]
+        Scheduler["Distributed Scheduler"]
+        RelayManager["Relay Manager"]
+        Inventory["Global Inventory"]
+        Policy["Policy Engine"]
+
+    end
+
+    API --> Scheduler
+    Scheduler --> RelayManager
+    RelayManager --> Inventory
+    RelayManager --> Policy
+
+    %% =====================================================
+    %% Federation Control
+    %% =====================================================
+
+    subgraph Federation["Relay Federation Control"]
+
+        Directory["Global Relay Directory"]
+        Topology["Topology Service"]
+        Health["Federation Health"]
+        Routing["Global Routing Engine"]
+
+    end
+
+    RelayManager --> Directory
+    Directory --> Topology
+    Topology --> Health
+    Health --> Routing
+
+    %% =====================================================
+    %% Regional Relay Clusters
+    %% =====================================================
+
+    subgraph Americas["Americas Relay Cluster"]
+
+        US1["Relay US-East"]
+        US2["Relay US-West"]
+        CA["Relay Canada"]
+
+    end
+
+    subgraph Europe["Europe Relay Cluster"]
+
+        EU1["Relay Frankfurt"]
+        EU2["Relay London"]
+        EU3["Relay Paris"]
+
+    end
+
+    subgraph Asia["Asia-Pacific Relay Cluster"]
+
+        AP1["Relay Singapore"]
+        AP2["Relay Tokyo"]
+        AP3["Relay Sydney"]
+
+    end
+
+    Routing --> US1
+    Routing --> EU1
+    Routing --> AP1
+
+    %% =====================================================
+    %% Federation Links
+    %% =====================================================
+
+    US1 <-. Federation Sync .-> US2
+    US2 <-. Federation Sync .-> CA
+
+    EU1 <-. Federation Sync .-> EU2
+    EU2 <-. Federation Sync .-> EU3
+
+    AP1 <-. Federation Sync .-> AP2
+    AP2 <-. Federation Sync .-> AP3
+
+    US2 <-. Global Federation .-> EU1
+    EU3 <-. Global Federation .-> AP1
+    AP3 <-. Global Federation .-> US1
+
+    %% =====================================================
+    %% Managed Sites
+    %% =====================================================
+
+    subgraph Sites["Managed Infrastructure"]
+
+        SiteA["North America"]
+        SiteB["Europe"]
+        SiteC["Asia"]
+        SiteD["Edge Locations"]
+
+    end
+
+    US1 --> SiteA
+    EU1 --> SiteB
+    AP1 --> SiteC
+
+    US2 --> SiteD
+    EU2 --> SiteD
+    AP2 --> SiteD
+
+    %% =====================================================
+    %% Federation Services
+    %% =====================================================
+
+    subgraph Services["Federated Services"]
+
+        Sessions["Session Directory"]
+        Presence["Agent Presence"]
+        Metadata["Relay Metadata"]
+        Discovery["Global Discovery"]
+
+    end
+
+    Directory --> Sessions
+    Directory --> Presence
+    Directory --> Metadata
+    Directory --> Discovery
+
+    %% =====================================================
+    %% Synchronization
+    %% =====================================================
+
+    subgraph Sync["Federated Synchronization"]
+
+        RoutingTable["Routing Tables"]
+        AgentRegistry["Agent Registry"]
+        RelayState["Relay Health"]
+        Capabilities["Capabilities"]
+
+    end
+
+    Sessions --> RoutingTable
+    Presence --> AgentRegistry
+    Metadata --> RelayState
+    Discovery --> Capabilities
+
+    RoutingTable -. Replicate .-> US1
+    RoutingTable -. Replicate .-> EU1
+    RoutingTable -. Replicate .-> AP1
+
+    AgentRegistry -. Replicate .-> US1
+    AgentRegistry -. Replicate .-> EU1
+    AgentRegistry -. Replicate .-> AP1
+
+    RelayState -. Replicate .-> US1
+    RelayState -. Replicate .-> EU1
+    RelayState -. Replicate .-> AP1
+
+    Capabilities -. Replicate .-> US1
+    Capabilities -. Replicate .-> EU1
+    Capabilities -. Replicate .-> AP1
+
+    %% =====================================================
+    %% Failover
+    %% =====================================================
+
+    subgraph Failover["Regional Failover"]
+
+        Detect["Relay Failure"]
+        Elect["Select Healthy Region"]
+        Redirect["Traffic Redirection"]
+        Resume["Resume Sessions"]
+
+    end
+
+    Health --> Detect
+    Detect --> Elect
+    Elect --> Redirect
+    Redirect --> Resume
+
+    Resume --> Routing
+
+    %% =====================================================
+    %% Federation Principles
+    %% =====================================================
+
+    Principles["Federation Principles
+
+• Global Relay Directory
+• Regional Autonomy
+• Shared Topology
+• Distributed Routing
+• Automatic Failover
+• Session Continuity
+• Metadata Replication
+• Eventual Consistency
+• Zero Trust Networking
+• Horizontal Scalability"]
+
+    Principles -.-> Federation
+    Principles -.-> Sync
+    Principles -.-> Failover
+
+    %% =====================================================
+    %% Operational Benefits
+    %% =====================================================
+
+    Benefits["Federation Benefits
+
+• Global Low Latency
+• Regional Isolation
+• High Availability
+• Disaster Recovery
+• Elastic Scaling
+• Localized Routing
+• Reduced Cross-Region Traffic
+• Continuous Operations"]
+
+    Benefits -.-> Americas
+    Benefits -.-> Europe
+    Benefits -.-> Asia
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef federation fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef relay fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef service fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class API,Scheduler,RelayManager,Inventory,Policy control
+
+    class Directory,Topology,Health,Routing federation
+
+    class US1,US2,CA,EU1,EU2,EU3,AP1,AP2,AP3 relay
+
+    class Sessions,Presence,Metadata,Discovery,RoutingTable,AgentRegistry,RelayState,Capabilities service
+
+    class SiteA,SiteB,SiteC,SiteD,Detect,Elect,Redirect,Resume operations
+
+    class Principles,Benefits note

@@ -1,0 +1,168 @@
+---
+title: BeaconLink Deployment Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Deployment
+    %% =====================================================
+
+    class Deployment {
+        +UUID id
+        +String name
+        +DeploymentStatus status
+        +Revision currentRevision
+        +DeploymentStrategy strategy
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Revision {
+        +UUID id
+        +Integer version
+        +Checksum checksum
+        +DateTime createdAt
+    }
+
+    %% =====================================================
+    %% Desired State
+    %% =====================================================
+
+    class Manifest {
+        +UUID id
+        +String schemaVersion
+        +Checksum checksum
+    }
+
+    class Resource {
+        +UUID id
+        +String kind
+        +String name
+        +String namespace
+    }
+
+    class Configuration {
+        +UUID id
+        +String key
+        +String value
+    }
+
+    class SecretReference {
+        +UUID id
+        +String name
+        +SecretProvider provider
+    }
+
+    %% =====================================================
+    %% Runtime
+    %% =====================================================
+
+    class Runtime {
+        +UUID id
+        +RuntimeType type
+        +String provider
+    }
+
+    class RuntimeAdapter {
+        +UUID id
+        +String implementation
+        +AdapterVersion version
+    }
+
+    class Agent {
+        +UUID id
+        +String hostname
+        +AgentStatus status
+    }
+
+    class Site {
+        +UUID id
+        +String name
+    }
+
+    %% =====================================================
+    %% Artifacts
+    %% =====================================================
+
+    class Artifact {
+        +UUID id
+        +String name
+        +String version
+        +Digest digest
+        +String registry
+    }
+
+    %% =====================================================
+    %% Reconciliation
+    %% =====================================================
+
+    class Reconciliation {
+        +UUID id
+        +ReconciliationState state
+        +DateTime startedAt
+        +DateTime completedAt
+    }
+
+    class Drift {
+        +UUID id
+        +DriftSeverity severity
+        +String reason
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Site "1" --> "*" Deployment : hosts
+
+    Deployment "1" --> "*" Revision : history
+
+    Deployment "1" --> "1" Manifest : defined by
+
+    Manifest "1" --> "*" Resource : contains
+
+    Resource --> "*" Configuration : references
+
+    Resource --> "*" SecretReference : references
+
+    Resource --> "*" Artifact : deploys
+
+    Deployment --> Runtime : targets
+
+    Runtime --> RuntimeAdapter : implemented by
+
+    Agent --> Runtime : provides
+
+    Site --> Agent : contains
+
+    Deployment --> Reconciliation : reconciled by
+
+    Reconciliation --> Drift : detects
+
+    Reconciliation --> Agent : executed on
+
+    Reconciliation --> Revision : applies
+
+    Drift --> Resource : affects
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef deployment fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef desired fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef runtime fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef artifact fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef reconcile fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Deployment,Revision deployment
+
+    class Manifest,Resource,Configuration,SecretReference desired
+
+    class Runtime,RuntimeAdapter,Agent,Site runtime
+
+    class Artifact artifact
+
+    class Reconciliation,Drift reconcile

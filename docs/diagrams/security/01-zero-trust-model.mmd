@@ -1,0 +1,263 @@
+---
+title: BeaconLink Zero Trust Security Model
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Security Principles
+    %% =====================================================
+
+    subgraph Principles["Zero Trust Principles"]
+
+        Verify["Verify Explicitly"]
+        Least["Least Privilege"]
+        Assume["Assume Breach"]
+        Continuous["Continuous Validation"]
+
+    end
+
+    %% =====================================================
+    %% Identity Sources
+    %% =====================================================
+
+    subgraph Identity["Identity Providers"]
+
+        Users["Human Users"]
+        Services["Platform Services"]
+        Agents["BeaconLink Agents"]
+        APIs["External APIs"]
+
+    end
+
+    Users --> Auth
+    Services --> Auth
+    Agents --> Auth
+    APIs --> Auth
+
+    %% =====================================================
+    %% Identity & Authentication
+    %% =====================================================
+
+    subgraph Authentication["Identity & Authentication"]
+
+        Auth["Identity Provider"]
+
+        MFA["Multi-Factor Authentication"]
+
+        MTLS["Mutual TLS"]
+
+        Tokens["Short-Lived Tokens"]
+
+        Certs["Certificate Validation"]
+
+    end
+
+    Auth --> MFA
+    Auth --> MTLS
+    Auth --> Tokens
+    MTLS --> Certs
+
+    %% =====================================================
+    %% Authorization
+    %% =====================================================
+
+    subgraph Authorization["Policy-Based Authorization"]
+
+        RBAC["RBAC"]
+
+        ABAC["Attribute-Based Access"]
+
+        Policy["Policy Engine"]
+
+        Decision["Authorization Decision"]
+
+    end
+
+    MFA --> RBAC
+    Tokens --> ABAC
+    Certs --> ABAC
+
+    RBAC --> Policy
+    ABAC --> Policy
+    Policy --> Decision
+
+    %% =====================================================
+    %% Secure Communication
+    %% =====================================================
+
+    subgraph Network["Secure Communication"]
+
+        Gateway["API Gateway"]
+
+        Relay["Relay Network"]
+
+        Session["Secure Session"]
+
+        Encryption["End-to-End Encryption"]
+
+    end
+
+    Decision --> Gateway
+    Gateway --> Relay
+    Relay --> Session
+    Session --> Encryption
+
+    %% =====================================================
+    %% Protected Resources
+    %% =====================================================
+
+    subgraph Resources["Protected Resources"]
+
+        Control["Control Plane"]
+
+        Workflow["Workflow Engine"]
+
+        Scheduler["Distributed Scheduler"]
+
+        Secrets["Secret Management"]
+
+        Runtime["Runtime Adapters"]
+
+        Data["Platform Data"]
+
+    end
+
+    Encryption --> Control
+    Encryption --> Workflow
+    Encryption --> Scheduler
+    Encryption --> Secrets
+    Encryption --> Runtime
+    Encryption --> Data
+
+    %% =====================================================
+    %% Continuous Verification
+    %% =====================================================
+
+    subgraph Verification["Continuous Verification"]
+
+        Heartbeat["Agent Heartbeats"]
+
+        SessionCheck["Session Validation"]
+
+        PolicyEval["Policy Re-Evaluation"]
+
+        Risk["Risk Assessment"]
+
+    end
+
+    Control --> Heartbeat
+
+    Heartbeat --> SessionCheck
+    SessionCheck --> PolicyEval
+    PolicyEval --> Risk
+
+    Risk --> Decision
+
+    %% =====================================================
+    %% Threat Detection
+    %% =====================================================
+
+    subgraph Detection["Threat Detection"]
+
+        Audit["Audit Logs"]
+
+        Events["Security Events"]
+
+        Anomaly["Anomaly Detection"]
+
+        Response["Automated Response"]
+
+    end
+
+    Decision --> Audit
+
+    Heartbeat --> Events
+    SessionCheck --> Events
+    PolicyEval --> Events
+
+    Audit --> Anomaly
+    Events --> Anomaly
+    Anomaly --> Response
+
+    %% =====================================================
+    %% Incident Response
+    %% =====================================================
+
+    subgraph Incident["Incident Response"]
+
+        Revoke["Revoke Credentials"]
+
+        Isolate["Isolate Session"]
+
+        Rotate["Rotate Certificates"]
+
+        Notify["Notify Operators"]
+
+    end
+
+    Response --> Revoke
+    Revoke --> Isolate
+    Isolate --> Rotate
+    Rotate --> Notify
+
+    %% =====================================================
+    %% Security Controls
+    %% =====================================================
+
+    Controls["Zero Trust Controls
+
+• Never Trust by Network Location
+• Verify Every Request
+• Mutual TLS Everywhere
+• Identity-Centric Security
+• Short-Lived Credentials
+• Policy-Based Authorization
+• Continuous Verification
+• Complete Auditability
+• Automatic Threat Response"]
+
+    Controls -.-> Principles
+    Controls -.-> Authentication
+    Controls -.-> Authorization
+    Controls -.-> Verification
+
+    %% =====================================================
+    %% Trust Boundaries
+    %% =====================================================
+
+    Boundaries["Trust Boundaries
+
+• Internet
+• Relay Network
+• Control Plane
+• Managed Sites
+• Runtime Environments
+
+Every Boundary Requires
+Authentication & Authorization"]
+
+    Boundaries -.-> Network
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef identity fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef auth fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef policy fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Users,Services,Agents,APIs identity
+
+    class Auth,MFA,MTLS,Tokens,Certs auth
+
+    class RBAC,ABAC,Policy,Decision,Gateway,Relay,Session,Encryption policy
+
+    class Control,Workflow,Scheduler,Secrets,Runtime,Data,Heartbeat,SessionCheck,PolicyEval,Risk runtime
+
+    class Audit,Events,Anomaly,Response,Revoke,Isolate,Rotate,Notify security
+
+    class Principles,Controls,Boundaries note

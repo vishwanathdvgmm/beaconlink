@@ -1,0 +1,196 @@
+---
+title: BeaconLink Session State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Session Creation
+    %% =====================================================
+
+    [*] --> New
+
+    New : Connection Requested
+    New : Session ID Pending
+
+    New --> Initializing
+
+    Initializing : Allocate Session Context
+    Initializing : Initialize Cryptographic State
+    Initializing : Configure Timeouts
+    Initializing : Load Trust Configuration
+
+    Initializing --> Authenticating
+
+    %% =====================================================
+    %% Authentication Phase
+    %% =====================================================
+
+    Authenticating : Mutual TLS Handshake
+    Authenticating : Certificate Validation
+    Authenticating : Identity Verification
+
+    Authenticating --> Authorizing : Identity Verified
+    Authenticating --> AuthenticationFailed : Validation Failed
+
+    AuthenticationFailed : Reject Session
+    AuthenticationFailed : Log Security Event
+
+    AuthenticationFailed --> Closed
+
+    Authorizing : Evaluate Session Policies
+    Authorizing : Validate Agent Permissions
+    Authorizing : Verify Site Authorization
+
+    Authorizing --> Establishing : Authorized
+    Authorizing --> AuthorizationFailed : Access Denied
+
+    AuthorizationFailed : Policy Denied
+    AuthorizationFailed : Audit Access Failure
+
+    AuthorizationFailed --> Closed
+
+    %% =====================================================
+    %% Session Establishment
+    %% =====================================================
+
+    Establishing : Create Secure Session
+    Establishing : Exchange Session Metadata
+    Establishing : Register Session
+
+    Establishing --> Active
+
+    %% =====================================================
+    %% Active Session Lifecycle
+    %% =====================================================
+
+    state Active {
+
+        [*] --> Idle
+
+        Idle : Await Messages
+        Idle : Await Heartbeats
+        Idle : Session Active
+
+        Idle --> Receiving : Incoming Message
+        Idle --> Sending : Outgoing Message
+        Idle --> Synchronizing : State Update
+        Idle --> Monitoring : Heartbeat Interval
+        Idle --> Renewing : Certificate Renewal
+        Idle --> Draining : Graceful Shutdown
+
+        %% -------------------------------------------------
+        %% Message Processing
+        %% -------------------------------------------------
+
+        Receiving : Receive Secure Message
+        Receiving : Verify Integrity
+        Receiving : Validate Sequence
+
+        Receiving --> Processing
+
+        Processing : Route Message
+        Processing : Apply Policies
+        Processing : Update Metrics
+
+        Processing --> Idle
+
+        Sending : Encrypt Payload
+        Sending : Sign Message
+        Sending : Transmit Message
+
+        Sending --> Idle
+
+        %% -------------------------------------------------
+        %% Synchronization
+        %% -------------------------------------------------
+
+        Synchronizing : Refresh Desired State
+        Synchronizing : Refresh Session Metadata
+
+        Synchronizing --> Idle
+
+        %% -------------------------------------------------
+        %% Health Monitoring
+        %% -------------------------------------------------
+
+        Monitoring : Verify Heartbeats
+        Monitoring : Check Latency
+        Monitoring : Validate Session Health
+
+        Monitoring --> Idle : Healthy
+        Monitoring --> Degraded : Performance Warning
+        Monitoring --> Expired : Heartbeat Timeout
+
+        %% -------------------------------------------------
+        %% Certificate Lifecycle
+        %% -------------------------------------------------
+
+        Renewing : Refresh Certificates
+        Renewing : Re-establish Trust
+
+        Renewing --> Idle : Renewal Successful
+        Renewing --> Reauthenticating : Full Revalidation Required
+
+        Reauthenticating : Repeat Identity Validation
+
+        Reauthenticating --> Idle : Successful
+        Reauthenticating --> Expired : Validation Failed
+
+        %% -------------------------------------------------
+        %% Degraded Operation
+        %% -------------------------------------------------
+
+        Degraded : Increased Latency
+        Degraded : Reduced Throughput
+
+        Degraded --> Idle : Recovered
+        Degraded --> Expired : Connection Lost
+
+        %% -------------------------------------------------
+        %% Graceful Drain
+        %% -------------------------------------------------
+
+        Draining : Reject New Requests
+        Draining : Complete Active Operations
+
+        Draining --> Closing
+
+    }
+
+    %% =====================================================
+    %% Session Expiration
+    %% =====================================================
+
+    Expired : Session Timeout
+    Expired : Identity Invalid
+    Expired : Connection Lost
+
+    Expired --> Closing
+
+    %% =====================================================
+    %% Session Closure
+    %% =====================================================
+
+    Closing : Flush Pending Messages
+    Closing : Release Session Resources
+    Closing : Remove Routing Entries
+    Closing : Publish Disconnect Event
+
+    Closing --> Closed
+
+    Closed : Session Terminated
+    Closed : Audit Complete
+
+    Closed --> [*]
+
+    %% =====================================================
+    %% Global Failure Paths
+    %% =====================================================
+
+    Active --> Closing : Remote Disconnect
+    Active --> Closing : Local Disconnect
+    Active --> Closing : Administrative Termination
+    Initializing --> Closed : Initialization Failure
+    Establishing --> Closed : Session Creation Failure

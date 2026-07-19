@@ -1,0 +1,166 @@
+---
+title: BeaconLink Policy Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Policy
+    %% =====================================================
+
+    class Policy {
+        +UUID id
+        +String name
+        +PolicyType type
+        +PolicyMode mode
+        +PolicyStatus status
+        +Integer priority
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class PolicyVersion {
+        +UUID id
+        +Integer revision
+        +Checksum checksum
+        +DateTime publishedAt
+    }
+
+    %% =====================================================
+    %% Rules
+    %% =====================================================
+
+    class Rule {
+        +UUID id
+        +String name
+        +RuleType type
+        +EvaluationOrder order
+    }
+
+    class Condition {
+        +UUID id
+        +Expression expression
+        +Operator operator
+    }
+
+    class Action {
+        +UUID id
+        +ActionType type
+        +ActionTarget target
+    }
+
+    %% =====================================================
+    %% Scope
+    %% =====================================================
+
+    class Tenant {
+        +UUID id
+        +String name
+    }
+
+    class Site {
+        +UUID id
+        +String name
+    }
+
+    class Deployment {
+        +UUID id
+        +String name
+    }
+
+    class Resource {
+        +UUID id
+        +String kind
+        +String name
+    }
+
+    %% =====================================================
+    %% Evaluation
+    %% =====================================================
+
+    class PolicyEvaluation {
+        +UUID id
+        +EvaluationResult result
+        +DateTime evaluatedAt
+    }
+
+    class Violation {
+        +UUID id
+        +ViolationSeverity severity
+        +String reason
+    }
+
+    class Exception {
+        +UUID id
+        +String justification
+        +DateTime expiresAt
+    }
+
+    %% =====================================================
+    %% Audit
+    %% =====================================================
+
+    class AuditRecord {
+        +UUID id
+        +String action
+        +DateTime timestamp
+    }
+
+    class Event {
+        +UUID id
+        +String type
+        +DateTime timestamp
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Policy "1" --> "*" PolicyVersion : versioned as
+
+    PolicyVersion "1" --> "*" Rule : contains
+
+    Rule "1" --> "*" Condition : evaluates
+
+    Rule "1" --> "*" Action : executes
+
+    Tenant --> "*" Policy : owns
+
+    Site --> "*" Policy : applies
+
+    Deployment --> "*" Policy : governed by
+
+    Resource --> "*" Policy : constrained by
+
+    Policy --> "*" PolicyEvaluation : produces
+
+    PolicyEvaluation --> "*" Violation : detects
+
+    PolicyEvaluation --> "*" Exception : honors
+
+    Policy --> "*" AuditRecord : audited
+
+    PolicyEvaluation --> "*" Event : publishes
+
+    Violation --> "*" Event : generates
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef policy fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef rules fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef scope fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef evaluation fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef audit fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Policy,PolicyVersion policy
+
+    class Rule,Condition,Action rules
+
+    class Tenant,Site,Deployment,Resource scope
+
+    class PolicyEvaluation,Violation,Exception evaluation
+
+    class AuditRecord,Event audit

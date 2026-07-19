@@ -1,0 +1,187 @@
+---
+title: BeaconLink Job State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Job Creation
+    %% =====================================================
+
+    [*] --> Created
+
+    Created : Job Requested
+    Created : Job ID Assigned
+    Created : Immutable Specification Stored
+    Created : Metadata Persisted
+
+    Created --> PendingValidation
+
+    %% =====================================================
+    %% Validation Phase
+    %% =====================================================
+
+    PendingValidation : Validate Job Definition
+    PendingValidation : Validate Parameters
+    PendingValidation : Validate Resources
+
+    PendingValidation --> PolicyEvaluation : Validation Successful
+    PendingValidation --> Failed : Validation Failed
+
+    PolicyEvaluation : Evaluate RBAC
+    PolicyEvaluation : Evaluate Compliance
+    PolicyEvaluation : Evaluate Execution Policies
+
+    PolicyEvaluation --> Scheduling : Authorized
+    PolicyEvaluation --> Rejected : Policy Denied
+
+    Rejected : Job Rejected
+    Rejected : Await User Correction
+
+    Rejected --> [*]
+
+    %% =====================================================
+    %% Scheduling Phase
+    %% =====================================================
+
+    Scheduling : Discover Eligible Agents
+    Scheduling : Evaluate Runtime Capabilities
+    Scheduling : Reserve Execution Capacity
+
+    Scheduling --> Queued : Capacity Reserved
+    Scheduling --> Waiting : No Capacity
+
+    Waiting : Await Available Resources
+
+    Waiting --> Scheduling : Resources Available
+    Waiting --> Cancelled : Cancel Requested
+
+    %% =====================================================
+    %% Queue Lifecycle
+    %% =====================================================
+
+    Queued : Await Execution Window
+    Queued : Priority Ordering
+
+    Queued --> Dispatching
+
+    %% =====================================================
+    %% Dispatch Phase
+    %% =====================================================
+
+    Dispatching : Send Job to BeaconLink Agent
+    Dispatching : Transfer Immutable Specification
+    Dispatching : Establish Execution Context
+
+    Dispatching --> Preparing
+
+    %% =====================================================
+    %% Runtime Execution
+    %% =====================================================
+
+    state Executing {
+
+        [*] --> Initializing
+
+        Initializing : Resolve Secrets
+        Initializing : Download Artifacts
+        Initializing : Prepare Runtime
+        Initializing : Allocate Resources
+
+        Initializing --> Running
+
+        Running : Execute Job Logic
+        Running : Stream Logs
+        Running : Publish Metrics
+
+        Running --> Checkpointing : Periodic Checkpoint
+        Running --> Suspending : Pause Requested
+        Running --> Retrying : Recoverable Failure
+        Running --> Verifying : Execution Finished
+        Running --> Failed : Fatal Runtime Error
+
+        Checkpointing : Persist Progress
+        Checkpointing : Save Execution State
+
+        Checkpointing --> Running
+
+        Suspending : Preserve Runtime Context
+
+        Suspending --> Running : Resume Requested
+        Suspending --> Cancelled : Cancel Requested
+
+        Retrying : Apply Retry Policy
+        Retrying : Exponential Backoff
+
+        Retrying --> Running
+        Retrying --> Failed : Retry Limit Exceeded
+
+        Verifying : Validate Exit Status
+        Verifying : Verify Outputs
+        Verifying : Collect Final Metrics
+
+        Verifying --> Completed : Success
+        Verifying --> Failed : Verification Failed
+
+    }
+
+    Preparing --> Executing
+
+    %% =====================================================
+    %% Completion
+    %% =====================================================
+
+    Completed : Job Successful
+    Completed : Publish Completion Event
+    Completed : Persist Results
+
+    Completed --> Archived
+
+    Archived : Immutable Job History
+    Archived : Audit Complete
+
+    Archived --> [*]
+
+    %% =====================================================
+    %% Failure Recovery
+    %% =====================================================
+
+    Failed : Job Failed
+    Failed : Diagnostics Available
+    Failed : Await Decision
+
+    Failed --> Scheduling : Retry Job
+    Failed --> Cancelled : Cancel Job
+
+    %% =====================================================
+    %% Cancellation
+    %% =====================================================
+
+    Cancelled : Stop Execution
+    Cancelled : Release Resources
+    Cancelled : Cleanup Secrets
+    Cancelled : Notify Workflow
+
+    Cancelled --> Archived
+
+    %% =====================================================
+    %% Timeout Handling
+    %% =====================================================
+
+    Executing --> TimedOut : Execution Timeout
+
+    TimedOut : Terminate Runtime
+    TimedOut : Collect Diagnostics
+    TimedOut : Publish Timeout Event
+
+    TimedOut --> Failed
+
+    %% =====================================================
+    %% Global Failure Paths
+    %% =====================================================
+
+    Scheduling --> Failed : Scheduler Failure
+    Dispatching --> Failed : Communication Failure
+    Preparing --> Failed : Runtime Initialization Failure
+    PendingValidation --> Cancelled : User Cancelled

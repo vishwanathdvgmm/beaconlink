@@ -1,0 +1,209 @@
+---
+title: BeaconLink Site Management Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> SiteUI
+
+%% =====================================================
+%% Site Management Page
+%% =====================================================
+
+subgraph SiteUI["Site Management"]
+
+direction TB
+
+Header["Site Management
+────────────────────────
+Multi-Site Infrastructure Administration"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Create["New Site"]
+
+Import["Import"]
+
+Refresh["Refresh"]
+
+Search["Search"]
+
+Filters["Filters"]
+
+Bulk["Bulk Actions"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Management Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph SiteList["Sites"]
+
+direction TB
+
+Tree["Site Hierarchy"]
+
+Groups["Site Groups"]
+
+Favorites["Pinned Sites"]
+
+Recent["Recent Sites"]
+
+end
+
+%% =====================================================
+
+subgraph SiteDetails["Selected Site"]
+
+direction TB
+
+Overview["Overview"]
+
+Status["Health Status"]
+
+Capacity["Capacity"]
+
+Topology["Network Topology"]
+
+Labels["Labels & Metadata"]
+
+Runtime["Supported Runtimes"]
+
+Policies["Applied Policies"]
+
+Agents["Registered Agents"]
+
+Deployments["Active Deployments"]
+
+Events["Recent Events"]
+
+end
+
+%% =====================================================
+
+subgraph Actions["Operations"]
+
+direction TB
+
+Register["Register Site"]
+
+Edit["Edit Configuration"]
+
+Drain["Drain Site"]
+
+Enable["Enable / Disable"]
+
+Delete["Delete Site"]
+
+Export["Export Configuration"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Operational Panels"]
+
+direction LR
+
+Map["Global Site Map"]
+
+Metrics["Site Metrics"]
+
+Audit["Site Audit History"]
+
+Activity["Live Activity"]
+
+end
+
+end
+
+%% =====================================================
+%% Backend Services
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+Inventory["Inventory Service"]
+
+AgentSvc["Agent Management"]
+
+Scheduler["Distributed Scheduler"]
+
+Policy["Policy Engine"]
+
+Workflow["Workflow Engine"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+SiteDetails --> Inventory
+
+SiteDetails --> AgentSvc
+
+SiteDetails --> Scheduler
+
+SiteDetails --> Policy
+
+SiteDetails --> Workflow
+
+BottomPanels --> EventsSvc
+
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Operations
+%% =====================================================
+
+Register --> AgentSvc
+
+Edit --> Inventory
+
+Drain --> Scheduler
+
+Enable --> Inventory
+
+Delete --> Workflow
+
+Export --> Inventory
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+EventsSvc -. Live Events .-> Activity
+
+AgentSvc -. Agent Status .-> Agents
+
+Inventory -. Health Updates .-> Status
+
+Scheduler -. Capacity Updates .-> Capacity
+
+Workflow -. Deployment Status .-> Deployments
+
+AuditSvc -. Audit Stream .-> Audit

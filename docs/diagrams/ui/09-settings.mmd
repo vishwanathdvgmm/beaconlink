@@ -1,0 +1,259 @@
+---
+title: BeaconLink Settings Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Administrator([Platform Administrator])
+
+Administrator --> SettingsUI
+
+%% =====================================================
+%% Settings Interface
+%% =====================================================
+
+subgraph SettingsUI["BeaconLink Settings"]
+
+direction TB
+
+Header["Platform Settings
+────────────────────────
+Configuration • Security • Integrations"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Save["Save Changes"]
+
+Validate["Validate Configuration"]
+
+Discard["Discard Changes"]
+
+Export["Export Settings"]
+
+Import["Import Settings"]
+
+Reset["Restore Defaults"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Settings Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Configuration Categories"]
+
+direction TB
+
+GeneralNav["General"]
+
+OrganizationsNav["Organizations"]
+
+SitesNav["Sites"]
+
+SecurityNav["Security"]
+
+AuthenticationNav["Authentication"]
+
+NetworkingNav["Networking"]
+
+RuntimeNav["Runtime"]
+
+PluginsNav["Plugin Framework"]
+
+NotificationsNav["Notifications"]
+
+IntegrationsNav["Integrations"]
+
+ObservabilityNav["Observability"]
+
+SystemNav["System"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph Configuration["Configuration Editor"]
+
+direction TB
+
+General["General
+• Platform Name
+• Time Zone
+• Branding"]
+
+Security["Zero Trust
+• mTLS
+• Certificates
+• Trust Stores"]
+
+Authentication["Authentication
+• SSO
+• OAuth
+• OIDC
+• RBAC"]
+
+Networking["Relay Network
+• Endpoints
+• Federation
+• Proxies"]
+
+Runtime["Runtime Manager
+• Runtime Adapters
+• Scheduling
+• Reconciliation"]
+
+Plugins["Plugin Framework
+• Extensions
+• Marketplace
+• Repositories"]
+
+Notifications["Notifications
+• Email
+• Webhooks
+• Alerts"]
+
+Observability["Observability
+• Metrics
+• Logging
+• Tracing
+• Retention"]
+
+end
+
+%% =====================================================
+
+subgraph Validation["Configuration Status"]
+
+direction TB
+
+Pending["Pending Changes"]
+
+ValidationResult["Validation Results"]
+
+Revision["Immutable Revision"]
+
+Deployment["Configuration Rollout"]
+
+Synchronization["Desired State"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Operations"]
+
+direction LR
+
+Activity["Configuration Activity"]
+
+Events["System Events"]
+
+Health["Platform Health"]
+
+AuditTrail["Audit Timeline"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+Inventory["Inventory Service"]
+
+PolicyEngine["Policy Engine"]
+
+WorkflowEngine["Workflow Engine"]
+
+RuntimeManager["Runtime Manager"]
+
+PluginFramework["Plugin Framework"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Configuration Sources
+%% =====================================================
+
+Configuration --> Inventory
+
+Configuration --> PolicyEngine
+
+Configuration --> RuntimeManager
+
+Configuration --> PluginFramework
+
+Validation --> WorkflowEngine
+
+BottomPanels --> Monitoring
+
+BottomPanels --> EventsSvc
+
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Administrative Operations
+%% =====================================================
+
+Save --> WorkflowEngine
+
+Validate --> PolicyEngine
+
+Discard --> Inventory
+
+Export --> Inventory
+
+Import --> WorkflowEngine
+
+Reset --> WorkflowEngine
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+Inventory -. Configuration State .-> Synchronization
+
+PolicyEngine -. Validation Results .-> ValidationResult
+
+WorkflowEngine -. Rollout Progress .-> Deployment
+
+WorkflowEngine -. Immutable Revision .-> Revision
+
+RuntimeManager -. Runtime Configuration .-> Runtime
+
+PluginFramework -. Extension Status .-> Plugins
+
+Monitoring -. Platform Health .-> Health
+
+EventsSvc -. Configuration Events .-> Events
+
+EventsSvc -. Activity Stream .-> Activity
+
+AuditSvc -. Audit Records .-> AuditTrail

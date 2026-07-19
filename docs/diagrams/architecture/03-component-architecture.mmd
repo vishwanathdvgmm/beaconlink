@@ -1,0 +1,198 @@
+---
+title: BeaconLink Component Architecture
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Presentation Layer
+    %% =====================================================
+
+    subgraph Presentation["Presentation Layer"]
+
+        Console["BeaconLink Console"]
+        REST["REST API"]
+        WS["WebSocket API"]
+        CLI["CLI"]
+
+    end
+
+    %% =====================================================
+    %% Gateway Layer
+    %% =====================================================
+
+    subgraph GatewayLayer["Gateway Layer"]
+
+        APIGateway["API Gateway"]
+
+    end
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph ControlPlane["Control Plane"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+        Plugin["Plugin Manager"]
+        Secrets["Secret Management"]
+
+    end
+
+    %% =====================================================
+    %% Platform Services
+    %% =====================================================
+
+    subgraph Platform["Platform Services"]
+
+        EventBus["Event Streaming Platform"]
+        Metadata["Metadata Store"]
+        Config["Configuration Store"]
+        Audit["Audit Log"]
+        Observability["Observability"]
+
+    end
+
+    %% =====================================================
+    %% Relay Layer
+    %% =====================================================
+
+    subgraph RelayLayer["Relay Layer"]
+
+        Relay["BeaconLink Relay Cluster"]
+
+    end
+
+    %% =====================================================
+    %% Agent Layer
+    %% =====================================================
+
+    subgraph AgentLayer["Agent Layer"]
+
+        Agent["BeaconLink Agent"]
+
+        Runtime["Runtime Manager"]
+        Inventory["Inventory Service"]
+        Health["Health Monitor"]
+        ConfigMgr["Configuration Manager"]
+        Executor["Deployment Executor"]
+
+    end
+
+    %% =====================================================
+    %% Runtime Layer
+    %% =====================================================
+
+    subgraph RuntimeLayer["Runtime Providers"]
+
+        Containers["Containers"]
+        Kubernetes["Kubernetes"]
+        VM["Virtual Machines"]
+        WASM["WebAssembly"]
+
+    end
+
+    %% =====================================================
+    %% User Access
+    %% =====================================================
+
+    Console --> APIGateway
+    REST --> APIGateway
+    WS --> APIGateway
+    CLI --> APIGateway
+
+    %% =====================================================
+    %% Gateway Routing
+    %% =====================================================
+
+    APIGateway --> Deploy
+    APIGateway --> Workflow
+    APIGateway --> Policy
+    APIGateway --> Scheduler
+    APIGateway --> Plugin
+    APIGateway --> Secrets
+
+    %% =====================================================
+    %% Internal Services
+    %% =====================================================
+
+    Deploy --> Workflow
+    Deploy --> Policy
+    Deploy --> Secrets
+    Deploy --> Plugin
+
+    Workflow --> Scheduler
+    Workflow --> Policy
+
+    %% =====================================================
+    %% Shared Platform Services
+    %% =====================================================
+
+    Deploy --> EventBus
+    Workflow --> EventBus
+    Policy --> EventBus
+    Scheduler --> EventBus
+    Plugin --> EventBus
+    Secrets --> EventBus
+
+    Deploy --> Metadata
+    Workflow --> Metadata
+    Policy --> Metadata
+    Scheduler --> Metadata
+
+    Deploy --> Config
+    Workflow --> Config
+
+    EventBus --> Audit
+    EventBus --> Observability
+
+    %% =====================================================
+    %% Relay Connectivity
+    %% =====================================================
+
+    EventBus --> Relay
+
+    Relay <-->|Persistent TLS| Agent
+
+    %% =====================================================
+    %% Agent Internals
+    %% =====================================================
+
+    Agent --> Runtime
+    Agent --> Inventory
+    Agent --> Health
+    Agent --> ConfigMgr
+    Agent --> Executor
+
+    Runtime --> Containers
+    Runtime --> Kubernetes
+    Runtime --> VM
+    Runtime --> WASM
+
+    Executor --> Runtime
+
+    Inventory --> Observability
+    Health --> Observability
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef presentation fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef gateway fill:#FFF3E0,stroke:#EF6C00,color:#000;
+    classDef control fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef platform fill:#EDE7F6,stroke:#5E35B1,color:#000;
+    classDef relay fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef agent fill:#FCE4EC,stroke:#C2185B,color:#000;
+    classDef runtime fill:#ECEFF1,stroke:#455A64,color:#000;
+
+    class Console,REST,WS,CLI presentation
+    class APIGateway gateway
+    class Deploy,Workflow,Policy,Scheduler,Plugin,Secrets control
+    class EventBus,Metadata,Config,Audit,Observability platform
+    class Relay relay
+    class Agent,Runtime,Inventory,Health,ConfigMgr,Executor agent
+    class Containers,Kubernetes,VM,WASM runtime

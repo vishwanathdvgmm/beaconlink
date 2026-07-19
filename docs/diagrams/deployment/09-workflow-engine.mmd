@@ -1,0 +1,224 @@
+---
+title: BeaconLink Workflow Engine
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Workflow Triggers
+    %% =====================================================
+
+    subgraph Triggers["Workflow Triggers"]
+
+        Deploy["Deployment Request"]
+        Schedule["Scheduled Trigger"]
+        Event["Platform Event"]
+        Webhook["External Webhook"]
+        Operator["Operator Action"]
+        Policy["Policy Trigger"]
+
+    end
+
+    %% =====================================================
+    %% Workflow Engine
+    %% =====================================================
+
+    subgraph Engine["Workflow Engine"]
+
+        Receive["Receive Trigger"]
+        Load["Load Workflow Definition"]
+        Validate["Validate Inputs"]
+        Context["Build Execution Context"]
+
+    end
+
+    Deploy --> Receive
+    Schedule --> Receive
+    Event --> Receive
+    Webhook --> Receive
+    Operator --> Receive
+    Policy --> Receive
+
+    Receive --> Load
+    Load --> Validate
+    Validate --> Context
+
+    %% =====================================================
+    %% Workflow Orchestrator
+    %% =====================================================
+
+    subgraph Orchestrator["Workflow Orchestrator"]
+
+        Planner["Execution Planner"]
+        Queue["Task Queue"]
+        Scheduler["Distributed Scheduler"]
+
+    end
+
+    Context --> Planner
+    Planner --> Queue
+    Queue --> Scheduler
+
+    %% =====================================================
+    %% Execution Pipeline
+    %% =====================================================
+
+    subgraph Execution["Task Execution"]
+
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+        Runtime["Runtime Adapter"]
+        Task["Execute Task"]
+
+    end
+
+    Scheduler --> Relay
+    Relay --> Agent
+    Agent --> Runtime
+    Runtime --> Task
+
+    %% =====================================================
+    %% Workflow Logic
+    %% =====================================================
+
+    subgraph Logic["Workflow Control Flow"]
+
+        Start["Start"]
+
+        Step1["Task"]
+
+        Decision{"Condition"}
+
+        Parallel["Parallel Tasks"]
+
+        Wait["Wait / Delay"]
+
+        Retry["Retry"]
+
+        Step2["Next Task"]
+
+        Complete["Complete"]
+
+        Failed["Failed"]
+
+        Start --> Step1
+        Step1 --> Decision
+
+        Decision -->|True| Parallel
+        Decision -->|False| Wait
+
+        Parallel --> Step2
+        Wait --> Retry
+
+        Retry --> Step2
+
+        Step2 --> Complete
+
+    end
+
+    Task --> Start
+
+    %% =====================================================
+    %% State Management
+    %% =====================================================
+
+    subgraph State["Workflow State"]
+
+        Status["Execution Status"]
+        Variables["Workflow Variables"]
+        Checkpoints["Checkpoints"]
+        History["Execution History"]
+
+    end
+
+    Planner --> Status
+    Step1 --> Variables
+    Step2 --> Variables
+    Parallel --> Checkpoints
+    Complete --> History
+    Failed --> History
+
+    %% =====================================================
+    %% Error Handling
+    %% =====================================================
+
+    subgraph Errors["Failure Handling"]
+
+        Error["Execution Error"]
+        Rollback["Compensation / Rollback"]
+        Escalate["Manual Approval"]
+        Abort["Abort Workflow"]
+
+    end
+
+    Retry --> Error
+    Error --> Rollback
+    Rollback --> Escalate
+    Escalate --> Abort
+
+    %% =====================================================
+    %% Events & Observability
+    %% =====================================================
+
+    subgraph Events["Observability"]
+
+        Audit["Audit Trail"]
+        Stream["Event Streaming Platform"]
+        Metrics["Workflow Metrics"]
+        Dashboard["Operations Dashboard"]
+
+    end
+
+    Complete --> Audit
+    Abort --> Audit
+
+    Audit --> Stream
+    Stream --> Metrics
+    Metrics --> Dashboard
+
+    %% =====================================================
+    %% Workflow Capabilities
+    %% =====================================================
+
+    Capabilities["Workflow Capabilities
+
+• Sequential Execution
+• Parallel Execution
+• Conditional Branching
+• Retry Policies
+• Delays & Scheduling
+• Compensation Logic
+• Human Approval Steps
+• Distributed Execution
+• Event Driven
+• Fully Auditable"]
+
+    Capabilities -.-> Engine
+    Capabilities -.-> Logic
+    Capabilities -.-> Execution
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef trigger fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef engine fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef orchestration fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef execution fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef state fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef observability fill:#E0F2F1,stroke:#00695C,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Deploy,Schedule,Event,Webhook,Operator,Policy trigger
+
+    class Receive,Load,Validate,Context engine
+
+    class Planner,Queue,Scheduler orchestration
+
+    class Relay,Agent,Runtime,Task,Start,Step1,Decision,Parallel,Wait,Retry,Step2,Complete,Failed execution
+
+    class Status,Variables,Checkpoints,History,Error,Rollback,Escalate,Abort state
+
+    class Audit,Stream,Metrics,Dashboard observability
+
+    class Capabilities note

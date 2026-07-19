@@ -1,0 +1,180 @@
+---
+title: BeaconLink Plugin Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Core Platform
+    %% =====================================================
+
+    subgraph Core["BeaconLink Core Platform"]
+
+        Gateway["API Gateway"]
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+
+        PluginManager["Plugin Manager"]
+
+    end
+
+    Gateway --> Deploy
+    Deploy --> PluginManager
+    Workflow --> PluginManager
+    Policy --> PluginManager
+    Scheduler --> PluginManager
+
+    %% =====================================================
+    %% Plugin Framework
+    %% =====================================================
+
+    subgraph Framework["Plugin Framework"]
+
+        Registry["Plugin Registry"]
+        Loader["Plugin Loader"]
+        Lifecycle["Lifecycle Manager"]
+        Sandbox["Sandbox"]
+        SDK["Plugin SDK"]
+
+    end
+
+    PluginManager --> Registry
+    PluginManager --> Loader
+    PluginManager --> Lifecycle
+
+    Loader --> Sandbox
+    Loader --> SDK
+
+    %% =====================================================
+    %% Extension Interfaces
+    %% =====================================================
+
+    subgraph Interfaces["Extension Interfaces"]
+
+        RuntimeAPI["Runtime Provider API"]
+        SecretAPI["Secret Provider API"]
+        AuthAPI["Authentication Provider API"]
+        NotifyAPI["Notification Provider API"]
+        PolicyAPI["Policy Extension API"]
+        WorkflowAPI["Workflow Extension API"]
+
+    end
+
+    SDK --> RuntimeAPI
+    SDK --> SecretAPI
+    SDK --> AuthAPI
+    SDK --> NotifyAPI
+    SDK --> PolicyAPI
+    SDK --> WorkflowAPI
+
+    %% =====================================================
+    %% Installed Plugins
+    %% =====================================================
+
+    subgraph Plugins["Installed Plugins"]
+
+        Docker["Docker Runtime Plugin"]
+        K8s["Kubernetes Runtime Plugin"]
+        Wasm["WebAssembly Runtime Plugin"]
+
+        Vault["Vault Secret Plugin"]
+        AWSSecrets["AWS Secrets Plugin"]
+
+        LDAP["LDAP Authentication Plugin"]
+        OIDC["OIDC Authentication Plugin"]
+
+        Email["Email Notification Plugin"]
+        Slack["Slack Notification Plugin"]
+
+    end
+
+    RuntimeAPI --> Docker
+    RuntimeAPI --> K8s
+    RuntimeAPI --> Wasm
+
+    SecretAPI --> Vault
+    SecretAPI --> AWSSecrets
+
+    AuthAPI --> LDAP
+    AuthAPI --> OIDC
+
+    NotifyAPI --> Email
+    NotifyAPI --> Slack
+
+    %% =====================================================
+    %% External Systems
+    %% =====================================================
+
+    subgraph External["External Platforms"]
+
+        Kubernetes["Kubernetes"]
+        DockerEngine["Docker Engine"]
+        VaultServer["HashiCorp Vault"]
+        AWS["AWS Secrets Manager"]
+        Identity["Identity Provider"]
+        Mail["SMTP / Email"]
+        SlackAPI["Slack"]
+
+    end
+
+    Docker --> DockerEngine
+    K8s --> Kubernetes
+    Wasm --> Kubernetes
+
+    Vault --> VaultServer
+    AWSSecrets --> AWS
+
+    LDAP --> Identity
+    OIDC --> Identity
+
+    Email --> Mail
+    Slack --> SlackAPI
+
+    %% =====================================================
+    %% Marketplace
+    %% =====================================================
+
+    Marketplace["BeaconLink Marketplace"]
+
+    Marketplace -. Signed Packages .-> Registry
+
+    %% =====================================================
+    %% Design Principles
+    %% =====================================================
+
+    Principles["Plugin Principles
+
+• Stable APIs
+• Versioned Interfaces
+• Sandboxed Execution
+• Signed Packages
+• Lifecycle Management
+• Runtime Isolation
+• Independent Upgrades"]
+
+    Principles -.-> Framework
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef core fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef framework fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef api fill:#FFF3E0,stroke:#EF6C00,color:#000;
+    classDef plugin fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef external fill:#ECEFF1,stroke:#455A64,color:#000;
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5;
+
+    class Gateway,Deploy,Workflow,Policy,Scheduler,PluginManager core
+
+    class Registry,Loader,Lifecycle,Sandbox,SDK framework
+
+    class RuntimeAPI,SecretAPI,AuthAPI,NotifyAPI,PolicyAPI,WorkflowAPI api
+
+    class Docker,K8s,Wasm,Vault,AWSSecrets,LDAP,OIDC,Email,Slack plugin
+
+    class Kubernetes,DockerEngine,VaultServer,AWS,Identity,Mail,SlackAPI,Marketplace external
+
+    class Principles note

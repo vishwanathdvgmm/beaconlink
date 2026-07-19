@@ -1,0 +1,284 @@
+---
+title: BeaconLink Relay Load Balancing Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Scheduler["Distributed Scheduler"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        RelayManager["Relay Manager"]
+
+    end
+
+    Scheduler --> RelayManager
+    Workflow --> RelayManager
+    Policy --> RelayManager
+
+    %% =====================================================
+    %% Load Balancer
+    %% =====================================================
+
+    subgraph Balancer["Relay Load Balancer"]
+
+        Router["Global Router"]
+
+        Discovery["Relay Discovery"]
+
+        Health["Health Evaluation"]
+
+        Capacity["Capacity Analysis"]
+
+        Latency["Latency Analysis"]
+
+        Strategy["Load Balancing Strategy"]
+
+    end
+
+    RelayManager --> Router
+
+    Router --> Discovery
+    Discovery --> Health
+    Health --> Capacity
+    Capacity --> Latency
+    Latency --> Strategy
+
+    %% =====================================================
+    %% Relay Pool
+    %% =====================================================
+
+    subgraph Pool["Relay Pool"]
+
+        Relay1["Relay A"]
+
+        Relay2["Relay B"]
+
+        Relay3["Relay C"]
+
+        Relay4["Relay D"]
+
+        Relay5["Relay E"]
+
+    end
+
+    Strategy --> Relay1
+    Strategy --> Relay2
+    Strategy --> Relay3
+    Strategy --> Relay4
+    Strategy --> Relay5
+
+    %% =====================================================
+    %% Relay Metrics
+    %% =====================================================
+
+    subgraph Metrics["Relay Metrics"]
+
+        Connections["Active Connections"]
+
+        CPU["CPU Usage"]
+
+        Memory["Memory Usage"]
+
+        Queue["Command Queue"]
+
+        Response["Response Time"]
+
+    end
+
+    Relay1 --> Connections
+    Relay2 --> Connections
+    Relay3 --> Connections
+    Relay4 --> Connections
+    Relay5 --> Connections
+
+    Connections --> CPU
+    CPU --> Memory
+    Memory --> Queue
+    Queue --> Response
+
+    Response --> Health
+
+    %% =====================================================
+    %% Managed Sites
+    %% =====================================================
+
+    subgraph Sites["Managed Sites"]
+
+        SiteA["Site A"]
+        SiteB["Site B"]
+        SiteC["Site C"]
+        SiteD["Site D"]
+        SiteE["Site E"]
+        SiteF["Site F"]
+
+    end
+
+    Relay1 --> SiteA
+    Relay1 --> SiteB
+
+    Relay2 --> SiteC
+
+    Relay3 --> SiteD
+
+    Relay4 --> SiteE
+
+    Relay5 --> SiteF
+
+    %% =====================================================
+    %% Agent Sessions
+    %% =====================================================
+
+    subgraph Agents["Persistent Agent Sessions"]
+
+        AgentA["BeaconLink Agent"]
+        AgentB["BeaconLink Agent"]
+        AgentC["BeaconLink Agent"]
+        AgentD["BeaconLink Agent"]
+        AgentE["BeaconLink Agent"]
+        AgentF["BeaconLink Agent"]
+
+    end
+
+    SiteA --> AgentA
+    SiteB --> AgentB
+    SiteC --> AgentC
+    SiteD --> AgentD
+    SiteE --> AgentE
+    SiteF --> AgentF
+
+    %% =====================================================
+    %% Dynamic Rebalancing
+    %% =====================================================
+
+    subgraph Rebalancing["Dynamic Session Rebalancing"]
+
+        Detect["Load Imbalance"]
+
+        Evaluate["Evaluate Candidate Relays"]
+
+        Migrate["Session Migration"]
+
+        Resume["Resume Communication"]
+
+    end
+
+    Health --> Detect
+
+    Detect --> Evaluate
+    Evaluate --> Migrate
+    Migrate --> Resume
+
+    Resume --> Strategy
+
+    %% =====================================================
+    %% Routing Algorithms
+    %% =====================================================
+
+    Algorithms["Routing Strategies
+
+• Least Connections
+• Weighted Round Robin
+• Capacity Aware
+• Geographic Locality
+• Latency Optimized
+• Health-Based Routing
+• Site Affinity
+• Sticky Sessions"]
+
+    Algorithms -.-> Strategy
+
+    %% =====================================================
+    %% High Availability
+    %% =====================================================
+
+    subgraph HA["High Availability"]
+
+        Failure["Relay Failure"]
+
+        Remove["Remove From Pool"]
+
+        Redistribute["Redistribute Sessions"]
+
+        Recovery["Relay Recovery"]
+
+    end
+
+    Relay2 -. Failure .-> Failure
+
+    Failure --> Remove
+    Remove --> Redistribute
+    Redistribute --> Strategy
+
+    Recovery --> Discovery
+
+    %% =====================================================
+    %% Observability
+    %% =====================================================
+
+    subgraph Observability["Operations"]
+
+        Audit["Audit Trail"]
+
+        Events["Event Streaming Platform"]
+
+        Dashboard["Operations Dashboard"]
+
+        Alerts["Alert Manager"]
+
+    end
+
+    Detect --> Audit
+    Failure --> Audit
+    Migrate --> Audit
+
+    Audit --> Events
+    Events --> Dashboard
+    Events --> Alerts
+
+    %% =====================================================
+    %% Load Balancing Principles
+    %% =====================================================
+
+    Principles["Load Balancing Principles
+
+• Horizontal Scalability
+• Automatic Session Distribution
+• Health-Aware Routing
+• Capacity-Based Scheduling
+• Sticky Agent Sessions
+• Zero Downtime Rebalancing
+• Automatic Failover
+• Global Relay Federation"]
+
+    Principles -.-> Balancer
+    Principles -.-> Pool
+    Principles -.-> Rebalancing
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef balancing fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef relay fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Scheduler,Workflow,Policy,RelayManager control
+
+    class Router,Discovery,Health,Capacity,Latency,Strategy balancing
+
+    class Relay1,Relay2,Relay3,Relay4,Relay5,Connections,CPU,Memory,Queue,Response relay
+
+    class SiteA,SiteB,SiteC,SiteD,SiteE,SiteF,AgentA,AgentB,AgentC,AgentD,AgentE,AgentF,Detect,Evaluate,Migrate,Resume runtime
+
+    class Failure,Remove,Redistribute,Recovery,Audit,Events,Dashboard,Alerts operations
+
+    class Algorithms,Principles note

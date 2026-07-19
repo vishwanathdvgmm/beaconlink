@@ -1,0 +1,240 @@
+---
+title: BeaconLink Relay Management Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> RelayUI
+
+%% =====================================================
+%% Relay Management Page
+%% =====================================================
+
+subgraph RelayUI["Relay Management"]
+
+direction TB
+
+Header["Relay Network Management
+────────────────────────
+Relay Clusters • Federation • Connectivity"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Refresh["Refresh"]
+
+AddRelay["Register Relay"]
+
+Upgrade["Upgrade Relay"]
+
+Drain["Drain Relay"]
+
+Enable["Enable / Disable"]
+
+Restart["Restart"]
+
+Delete["Remove Relay"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Relay Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+OverviewNav["Overview"]
+
+FederationNav["Federation"]
+
+ConnectionsNav["Connections"]
+
+TopologyNav["Topology"]
+
+MetricsNav["Metrics"]
+
+EventsNav["Events"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph RelayDetails["Relay Overview"]
+
+direction TB
+
+Identity["Identity
+• Relay ID
+• Region
+• Version
+• Cluster"]
+
+Health["Health
+• Status
+• Uptime
+• Availability
+• Last Heartbeat"]
+
+Capacity["Capacity
+• Active Sessions
+• Throughput
+• CPU
+• Memory"]
+
+Connectivity["Connectivity
+• Peer Relays
+• Connected Agents
+• Control Plane
+• Federation Status"]
+
+Security["Security
+• mTLS Status
+• Certificates
+• Trust Store
+• Cipher Suites"]
+
+Routing["Routing
+• Active Routes
+• Route Table
+• Failover Status
+• Load Distribution"]
+
+end
+
+%% =====================================================
+
+subgraph RuntimeView["Operational Status"]
+
+direction TB
+
+Sessions["Active Sessions"]
+
+Agents["Connected Agents"]
+
+Peers["Relay Peers"]
+
+Traffic["Traffic Flow"]
+
+Failures["Recent Failures"]
+
+Maintenance["Maintenance Tasks"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Observability"]
+
+direction LR
+
+TopologyMap["Global Relay Topology"]
+
+MetricsPanel["Live Metrics"]
+
+EventsPanel["Relay Events"]
+
+LogsPanel["Streaming Logs"]
+
+AuditPanel["Audit History"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+RelayManager["Relay Management"]
+
+Inventory["Inventory Service"]
+
+Scheduler["Distributed Scheduler"]
+
+Policy["Policy Engine"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+RelayDetails --> RelayManager
+RelayDetails --> Inventory
+RelayDetails --> Policy
+
+RuntimeView --> RelayManager
+RuntimeView --> Scheduler
+
+BottomPanels --> Monitoring
+BottomPanels --> EventsSvc
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Administrative Operations
+%% =====================================================
+
+AddRelay --> RelayManager
+
+Upgrade --> RelayManager
+
+Drain --> Scheduler
+
+Enable --> RelayManager
+
+Restart --> RelayManager
+
+Delete --> Inventory
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+RelayManager -. Session Updates .-> Sessions
+
+RelayManager -. Connected Agents .-> Agents
+
+RelayManager -. Federation Status .-> Connectivity
+
+Scheduler -. Traffic Distribution .-> Routing
+
+Inventory -. Relay Health .-> Health
+
+Monitoring -. Metrics Stream .-> MetricsPanel
+
+Monitoring -. Log Stream .-> LogsPanel
+
+EventsSvc -. Live Events .-> EventsPanel
+
+AuditSvc -. Audit Records .-> AuditPanel
+
+RelayManager -. Federation Topology .-> TopologyMap

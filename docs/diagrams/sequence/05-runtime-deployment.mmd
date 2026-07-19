@@ -1,0 +1,172 @@
+---
+title: BeaconLink Runtime Deployment Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Workflow as Workflow Engine
+    participant Planner as Deployment Planner
+    participant Relay as Relay Network
+    participant Agent as BeaconLink Agent
+    participant Runtime as Runtime Manager
+    participant Adapter as Runtime Adapter
+    participant Platform as Runtime Platform
+    participant Inventory as Inventory Service
+    participant Policy as Policy Engine
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Deployment Dispatch
+    %% =====================================================
+
+    Workflow->>Planner: Execute immutable deployment revision
+    Planner-->>Workflow: Deployment execution plan
+
+    Workflow->>Relay: Dispatch deployment task
+    Relay->>Agent: Deliver deployment instruction
+
+    %% =====================================================
+    %% Agent Validation
+    %% =====================================================
+
+    Agent->>Agent: Verify deployment revision
+    Agent->>Policy: Validate deployment policy
+    Policy-->>Agent: Deployment authorized
+
+    Agent->>Agent: Verify runtime availability
+    Agent->>Runtime: Initialize deployment session
+
+    %% =====================================================
+    %% Runtime Translation
+    %% =====================================================
+
+    Runtime->>Adapter: Translate desired state
+
+    Note right of Adapter: Runtime-independent\nBeaconLink specification\nis translated into\nplatform-specific operations.
+
+    Adapter->>Adapter: Resolve runtime capabilities
+    Adapter->>Adapter: Build execution plan
+    Adapter-->>Runtime: Runtime execution plan
+
+    %% =====================================================
+    %% Platform Preparation
+    %% =====================================================
+
+    Runtime->>Platform: Validate platform health
+    Platform-->>Runtime: Platform ready
+
+    Runtime->>Platform: Reserve required resources
+    Platform-->>Runtime: Resources allocated
+
+    Runtime->>Platform: Validate dependencies
+    Platform-->>Runtime: Dependencies satisfied
+
+    %% =====================================================
+    %% Deployment Execution
+    %% =====================================================
+
+    Runtime->>Platform: Apply deployment
+
+    loop Deployment Operations
+
+        Platform-->>Runtime: Operation progress
+
+        Runtime->>Agent: Runtime status
+
+        Agent->>Relay: Progress update
+
+        Relay->>Workflow: Forward progress
+
+        Workflow->>Events: Publish DeploymentProgress
+
+    end
+
+    %% =====================================================
+    %% Runtime Verification
+    %% =====================================================
+
+    Platform-->>Runtime: Deployment finished
+
+    Runtime->>Platform: Verify workload health
+
+    Platform-->>Runtime: Health check results
+
+    Runtime->>Platform: Validate desired state
+
+    Platform-->>Runtime: State converged
+
+    %% =====================================================
+    %% Inventory Synchronization
+    %% =====================================================
+
+    Runtime->>Agent: Runtime successful
+
+    Agent->>Inventory: Update workload inventory
+    Agent->>Inventory: Update runtime metadata
+    Inventory-->>Agent: Inventory synchronized
+
+    %% =====================================================
+    %% Deployment Completion
+    %% =====================================================
+
+    Agent->>Workflow: Deployment completed
+
+    Workflow->>Audit: Record deployment success
+
+    Workflow->>Events: Publish RuntimeDeploymentCompleted
+
+    %% =====================================================
+    %% Continuous Reconciliation
+    %% =====================================================
+
+    loop Continuous Reconciliation
+
+        Agent->>Runtime: Verify runtime state
+
+        Runtime->>Platform: Compare desired vs actual
+
+        alt Drift Detected
+
+            Platform-->>Runtime: Configuration drift
+
+            Runtime-->>Agent: Reconciliation required
+
+            Agent->>Workflow: Drift report
+
+            Workflow->>Events: Publish DriftDetected
+
+        else State Healthy
+
+            Runtime-->>Agent: Runtime healthy
+
+        end
+
+    end
+
+    %% =====================================================
+    %% Failure Handling
+    %% =====================================================
+
+    alt Runtime Failure
+
+        Platform-->>Runtime: Deployment error
+
+        Runtime-->>Agent: Failure diagnostics
+
+        Agent->>Workflow: Runtime deployment failed
+
+        Workflow->>Audit: Record runtime failure
+
+        Workflow->>Planner: Generate rollback plan
+
+        Planner-->>Workflow: Rollback revision
+
+        Workflow->>Relay: Dispatch rollback
+
+    else Successful Deployment
+
+        Note over Agent,Platform: Runtime successfully converged<br/>to the immutable desired state.<br/>Continuous reconciliation maintains correctness.
+
+    end

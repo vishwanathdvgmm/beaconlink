@@ -1,0 +1,220 @@
+---
+title: BeaconLink Relay-First Networking Architecture
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% External Clients
+    %% =====================================================
+
+    subgraph Clients["Clients & Operators"]
+
+        CLI["BeaconLink CLI"]
+        UI["Web Console"]
+        API["Automation / API"]
+        GitOps["GitOps Controller"]
+
+    end
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Gateway["API Gateway"]
+
+        Auth["Identity & Authentication"]
+
+        Planner["Deployment Planner"]
+
+        Scheduler["Distributed Scheduler"]
+
+        RelayManager["Relay Manager"]
+
+    end
+
+    CLI --> Gateway
+    UI --> Gateway
+    API --> Gateway
+    GitOps --> Gateway
+
+    Gateway --> Auth
+    Auth --> Planner
+    Planner --> Scheduler
+    Scheduler --> RelayManager
+
+    %% =====================================================
+    %% Relay Network
+    %% =====================================================
+
+    subgraph Relay["Relay Network"]
+
+        RelayA["Regional Relay A"]
+
+        RelayB["Regional Relay B"]
+
+        RelayC["Regional Relay C"]
+
+        Routing["Relay Routing"]
+
+    end
+
+    RelayManager --> Routing
+
+    Routing --> RelayA
+    Routing --> RelayB
+    Routing --> RelayC
+
+    RelayA <-. Replication .-> RelayB
+    RelayB <-. Replication .-> RelayC
+    RelayC <-. Replication .-> RelayA
+
+    %% =====================================================
+    %% Private Infrastructure
+    %% =====================================================
+
+    subgraph Sites["Managed Sites"]
+
+        subgraph Site1["Site A"]
+
+            Agent1["BeaconLink Agent"]
+
+            Runtime1["Runtime Adapter"]
+
+        end
+
+        subgraph Site2["Site B"]
+
+            Agent2["BeaconLink Agent"]
+
+            Runtime2["Runtime Adapter"]
+
+        end
+
+        subgraph Site3["Edge Site"]
+
+            Agent3["BeaconLink Agent"]
+
+            Runtime3["Runtime Adapter"]
+
+        end
+
+    end
+
+    RelayA --> Agent1
+    RelayB --> Agent2
+    RelayC --> Agent3
+
+    Agent1 --> Runtime1
+    Agent2 --> Runtime2
+    Agent3 --> Runtime3
+
+    %% =====================================================
+    %% Outbound Connections
+    %% =====================================================
+
+    Outbound["Outbound-Only Secure Connections"]
+
+    Agent1 -.-> Outbound
+    Agent2 -.-> Outbound
+    Agent3 -.-> Outbound
+
+    Outbound -.-> Relay
+
+    %% =====================================================
+    %% Event Streaming
+    %% =====================================================
+
+    subgraph Events["Bidirectional Event Flow"]
+
+        Commands["Deployment Commands"]
+
+        Status["Status Updates"]
+
+        Metrics["Metrics"]
+
+        Audit["Audit Events"]
+
+    end
+
+    Scheduler --> Commands
+
+    Commands --> RelayManager
+
+    Agent1 --> Status
+    Agent2 --> Status
+    Agent3 --> Status
+
+    Agent1 --> Metrics
+    Agent2 --> Metrics
+    Agent3 --> Metrics
+
+    Agent1 --> Audit
+    Agent2 --> Audit
+    Agent3 --> Audit
+
+    Status --> RelayManager
+    Metrics --> RelayManager
+    Audit --> RelayManager
+
+    %% =====================================================
+    %% Network Principles
+    %% =====================================================
+
+    Principles["Relay-First Principles
+
+• No Direct Control Plane Access
+• Outbound Connections Only
+• NAT & Firewall Friendly
+• Zero Trust Communication
+• Multi-Region Relay Network
+• Highly Available
+• Event-Driven Messaging
+• Runtime Independent
+• Site Isolation
+• Secure by Default"]
+
+    Principles -.-> Relay
+    Principles -.-> Sites
+
+    %% =====================================================
+    %% Benefits
+    %% =====================================================
+
+    Benefits["Operational Benefits
+
+• No VPN Requirement
+• No Public Agent Endpoints
+• Simplified Firewall Rules
+• Horizontal Scalability
+• Resilient Networking
+• Edge-Friendly Architecture
+• Centralized Routing
+• Secure Remote Operations"]
+
+    Benefits -.-> Outbound
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef client fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef control fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef relay fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef site fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef events fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class CLI,UI,API,GitOps client
+
+    class Gateway,Auth,Planner,Scheduler,RelayManager control
+
+    class RelayA,RelayB,RelayC,Routing relay
+
+    class Agent1,Agent2,Agent3,Runtime1,Runtime2,Runtime3,Outbound site
+
+    class Commands,Status,Metrics,Audit events
+
+    class Principles,Benefits note

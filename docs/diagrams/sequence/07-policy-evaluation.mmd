@@ -1,0 +1,160 @@
+---
+title: BeaconLink Policy Evaluation Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant User as Platform Operator
+    participant API as API Gateway
+    participant Auth as Identity Provider
+    participant Policy as Policy Engine
+    participant PDP as Policy Decision Point
+    participant Inventory as Inventory Service
+    participant Planner as Deployment Planner
+    participant Workflow as Workflow Engine
+    participant Audit as Audit Service
+    participant Events as Event Streaming Platform
+    participant Agent as BeaconLink Agent
+
+    %% =====================================================
+    %% Request Submission
+    %% =====================================================
+
+    User->>API: Submit deployment request
+
+    API->>Auth: Authenticate identity
+    Auth-->>API: Identity verified
+
+    API->>Policy: Evaluate deployment request
+
+    Note right of Policy: Evaluation begins before<br/>any workflow execution.
+
+    %% =====================================================
+    %% Policy Context Collection
+    %% =====================================================
+
+    Policy->>Inventory: Retrieve infrastructure context
+
+    Inventory-->>Policy: Sites, agents, labels,<br/>runtime capabilities, ownership
+
+    Policy->>Planner: Retrieve deployment metadata
+
+    Planner-->>Policy: Manifest, revision,<br/>deployment targets
+
+    Policy->>Policy: Build evaluation context
+
+    %% =====================================================
+    %% Policy Evaluation
+    %% =====================================================
+
+    Policy->>PDP: Execute policy rules
+
+    Note right of PDP: Evaluate:<br/>• RBAC permissions<br/>• Organization policies<br/>• Deployment restrictions<br/>• Runtime compatibility<br/>• Resource quotas<br/>• Compliance rules<br/>• Secret access<br/>• Network constraints
+
+    PDP->>PDP: Evaluate all applicable rules
+
+    %% =====================================================
+    %% Decision
+    %% =====================================================
+
+    alt Policy Approved
+
+        PDP-->>Policy: Allow
+
+        Policy-->>API: Authorization successful
+
+        API->>Workflow: Create deployment workflow
+
+        Workflow-->>API: Workflow accepted
+
+        API-->>User: Deployment accepted
+
+        Policy->>Events: Publish PolicyApproved
+
+    else Policy Denied
+
+        PDP-->>Policy: Deny with violations
+
+        Policy->>Audit: Record policy violations
+
+        Policy->>Events: Publish PolicyDenied
+
+        Policy-->>API: Authorization failed
+
+        API-->>User: Deployment rejected
+
+    end
+
+    %% =====================================================
+    %% Runtime Policy Verification
+    %% =====================================================
+
+    opt Runtime Enforcement
+
+        Workflow->>Agent: Dispatch deployment
+
+        Agent->>Policy: Re-evaluate execution policy
+
+        Policy->>PDP: Validate runtime context
+
+        alt Runtime Authorized
+
+            PDP-->>Policy: Allow execution
+
+            Policy-->>Agent: Continue deployment
+
+        else Runtime Denied
+
+            PDP-->>Policy: Deny execution
+
+            Policy-->>Agent: Abort deployment
+
+            Agent->>Events: Publish RuntimePolicyViolation
+
+        end
+
+    end
+
+    %% =====================================================
+    %% Continuous Compliance
+    %% =====================================================
+
+    loop Continuous Reconciliation
+
+        Agent->>Policy: Validate running workload
+
+        Policy->>Inventory: Retrieve latest policies
+
+        Inventory-->>Policy: Updated policy state
+
+        Policy->>PDP: Re-evaluate compliance
+
+        alt Policy Drift Detected
+
+            PDP-->>Policy: Non-compliant
+
+            Policy->>Events: Publish PolicyViolationDetected
+
+            Policy->>Audit: Record compliance failure
+
+            Policy-->>Agent: Trigger reconciliation
+
+        else Compliant
+
+            PDP-->>Policy: Compliant
+
+            Policy-->>Agent: Continue operation
+
+        end
+
+    end
+
+    %% =====================================================
+    %% Audit and Observability
+    %% =====================================================
+
+    Policy->>Audit: Record evaluation result
+    Audit->>Events: Publish PolicyEvaluationCompleted
+
+    Note over Policy,PDP: Every policy decision is<br/>deterministic, auditable,<br/>and continuously enforceable<br/>throughout the workload lifecycle.

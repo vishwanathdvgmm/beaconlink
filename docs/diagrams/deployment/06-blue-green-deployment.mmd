@@ -1,0 +1,187 @@
+---
+title: BeaconLink Blue-Green Deployment
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Existing Environment
+    %% =====================================================
+
+    subgraph Blue["Blue Environment (Active)"]
+
+        BlueApp["Application v1"]
+        BlueHealth["Health Checks"]
+
+    end
+
+    %% =====================================================
+    %% New Environment
+    %% =====================================================
+
+    subgraph Green["Green Environment (Candidate)"]
+
+        GreenDeploy["Deploy Application v2"]
+        GreenConfig["Apply Configuration"]
+        GreenSecrets["Inject Secrets"]
+        GreenHealth["Health Verification"]
+
+    end
+
+    %% =====================================================
+    %% Traffic Layer
+    %% =====================================================
+
+    subgraph Traffic["Traffic Management"]
+
+        Gateway["API Gateway / Load Balancer"]
+
+        Router["Traffic Router"]
+
+    end
+
+    Users["Users"]
+
+    Users --> Gateway
+    Gateway --> Router
+
+    Router --> BlueApp
+
+    %% =====================================================
+    %% Deployment Pipeline
+    %% =====================================================
+
+    Manifest["Deployment Revision"]
+
+    Planner["Deployment Planner"]
+
+    Scheduler["Distributed Scheduler"]
+
+    Relay["Relay Network"]
+
+    Agent["BeaconLink Agent"]
+
+    Runtime["Runtime Adapter"]
+
+    Manifest --> Planner
+    Planner --> Scheduler
+    Scheduler --> Relay
+    Relay --> Agent
+    Agent --> Runtime
+
+    Runtime --> GreenDeploy
+
+    GreenDeploy --> GreenConfig
+    GreenConfig --> GreenSecrets
+    GreenSecrets --> GreenHealth
+
+    %% =====================================================
+    %% Validation
+    %% =====================================================
+
+    subgraph Validation["Validation Pipeline"]
+
+        Readiness["Readiness"]
+        Metrics["Metrics"]
+        Policies["Policy Validation"]
+        Smoke["Smoke Tests"]
+
+    end
+
+    GreenHealth --> Readiness
+    Readiness --> Metrics
+    Metrics --> Policies
+    Policies --> Smoke
+
+    %% =====================================================
+    %% Decision
+    %% =====================================================
+
+    Decision{"Green Healthy?"}
+
+    Smoke --> Decision
+
+    %% =====================================================
+    %% Promotion
+    %% =====================================================
+
+    Switch["Atomic Traffic Switch"]
+
+    Router -. Current .-> BlueApp
+
+    Decision -->|Yes| Switch
+
+    Switch --> Router
+
+    Router -. New .-> GreenDeploy
+
+    %% =====================================================
+    %% Rollback
+    %% =====================================================
+
+    Rollback["Instant Rollback"]
+
+    Decision -->|No| Rollback
+
+    Rollback --> BlueApp
+
+    %% =====================================================
+    %% Cleanup
+    %% =====================================================
+
+    Cleanup["Retire Blue Environment"]
+
+    Switch --> Cleanup
+
+    %% =====================================================
+    %% Audit
+    %% =====================================================
+
+    Audit["Audit Trail"]
+
+    Events["Platform Events"]
+
+    Cleanup --> Audit
+    Rollback --> Audit
+
+    Audit --> Events
+
+    %% =====================================================
+    %% Benefits
+    %% =====================================================
+
+    Benefits["Blue-Green Benefits
+
+• Zero Downtime
+• Atomic Cutover
+• Instant Rollback
+• Production Validation
+• Full Environment Isolation
+• Immutable Revisions
+• Safe Production Testing"]
+
+    Benefits -.-> Blue
+    Benefits -.-> Green
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef active fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef candidate fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef deploy fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef validation fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class BlueApp,BlueHealth active
+
+    class GreenDeploy,GreenConfig,GreenSecrets,GreenHealth candidate
+
+    class Manifest,Planner,Scheduler,Relay,Agent,Runtime deploy
+
+    class Readiness,Metrics,Policies,Smoke,Decision validation
+
+    class Users,Gateway,Router,Switch,Rollback,Cleanup,Audit,Events operations
+
+    class Benefits note

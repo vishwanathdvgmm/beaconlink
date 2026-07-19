@@ -1,0 +1,190 @@
+---
+title: BeaconLink Domain Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Core Organization
+    %% =====================================================
+
+    class Tenant {
+        +UUID id
+        +String name
+        +String description
+        +TenantStatus status
+        +DateTime createdAt
+    }
+
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +UserStatus status
+    }
+
+    class Role {
+        +UUID id
+        +String name
+    }
+
+    class Site {
+        +UUID id
+        +String name
+        +SiteType type
+        +Region region
+        +SiteStatus status
+    }
+
+    %% =====================================================
+    %% Infrastructure
+    %% =====================================================
+
+    class Relay {
+        +UUID id
+        +String name
+        +RelayStatus status
+        +String version
+    }
+
+    class Agent {
+        +UUID id
+        +String hostname
+        +String version
+        +AgentStatus status
+        +DateTime lastSeen
+    }
+
+    class Runtime {
+        +UUID id
+        +RuntimeType type
+        +String provider
+        +String version
+    }
+
+    %% =====================================================
+    %% Deployment
+    %% =====================================================
+
+    class Deployment {
+        +UUID id
+        +String name
+        +DeploymentStatus status
+        +Revision revision
+    }
+
+    class Manifest {
+        +UUID id
+        +String version
+        +Checksum checksum
+    }
+
+    class Artifact {
+        +UUID id
+        +String name
+        +String version
+        +Digest digest
+    }
+
+    %% =====================================================
+    %% Security
+    %% =====================================================
+
+    class Policy {
+        +UUID id
+        +String name
+        +PolicyType type
+    }
+
+    class Secret {
+        +UUID id
+        +String name
+        +SecretProvider provider
+    }
+
+    %% =====================================================
+    %% Operations
+    %% =====================================================
+
+    class Workflow {
+        +UUID id
+        +String name
+        +WorkflowStatus status
+    }
+
+    class Event {
+        +UUID id
+        +String type
+        +DateTime timestamp
+    }
+
+    class AuditRecord {
+        +UUID id
+        +String action
+        +DateTime timestamp
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Tenant "1" --> "*" User : owns
+    Tenant "1" --> "*" Role : defines
+    Tenant "1" --> "*" Site : manages
+
+    User "*" --> "*" Role : assigned
+
+    Site "1" --> "*" Relay : connected through
+    Site "1" --> "*" Agent : contains
+
+    Agent "1" --> "1" Runtime : executes on
+
+    Site "1" --> "*" Deployment : hosts
+
+    Deployment "1" --> "1" Manifest : described by
+    Deployment "1" --> "*" Artifact : deploys
+
+    Deployment "*" --> "*" Policy : governed by
+
+    Deployment "*" --> "*" Secret : references
+
+    Workflow "*" --> "*" Deployment : orchestrates
+
+    Workflow --> Event : publishes
+
+    Agent --> Event : publishes
+
+    Relay --> Event : publishes
+
+    Deployment --> Event : publishes
+
+    Policy --> Event : publishes
+
+    User --> AuditRecord : performs
+
+    Deployment --> AuditRecord : audited
+
+    Policy --> AuditRecord : audited
+
+    Secret --> AuditRecord : audited
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef ownership fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef infra fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef deployment fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef security fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Tenant,User,Role,Site ownership
+
+    class Relay,Agent,Runtime infra
+
+    class Deployment,Manifest,Artifact deployment
+
+    class Policy,Secret security
+
+    class Workflow,Event,AuditRecord operations

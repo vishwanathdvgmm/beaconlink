@@ -1,0 +1,269 @@
+---
+title: BeaconLink Authorization Flow
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Authenticated Principals
+    %% =====================================================
+
+    subgraph Principals["Authenticated Principals"]
+
+        User["Human User"]
+        Service["Platform Service"]
+        Agent["BeaconLink Agent"]
+        API["External API"]
+
+    end
+
+    %% =====================================================
+    %% Identity Context
+    %% =====================================================
+
+    subgraph Identity["Identity Context"]
+
+        Session["Authenticated Session"]
+
+        Claims["Identity Claims"]
+
+        Roles["Roles"]
+
+        Attributes["Attributes"]
+
+        Groups["Groups"]
+
+    end
+
+    User --> Session
+    Service --> Session
+    Agent --> Session
+    API --> Session
+
+    Session --> Claims
+    Claims --> Roles
+    Claims --> Attributes
+    Claims --> Groups
+
+    %% =====================================================
+    %% Authorization Request
+    %% =====================================================
+
+    subgraph Request["Authorization Request"]
+
+        Resource["Requested Resource"]
+
+        Action["Requested Action"]
+
+        Environment["Execution Context"]
+
+        RequestCtx["Authorization Context"]
+
+    end
+
+    Roles --> RequestCtx
+    Attributes --> RequestCtx
+    Groups --> RequestCtx
+
+    Resource --> RequestCtx
+    Action --> RequestCtx
+    Environment --> RequestCtx
+
+    %% =====================================================
+    %% Policy Evaluation
+    %% =====================================================
+
+    subgraph PolicyEngine["Policy Engine"]
+
+        Normalize["Normalize Request"]
+
+        RBAC["RBAC Evaluation"]
+
+        ABAC["ABAC Evaluation"]
+
+        Conditions["Policy Conditions"]
+
+        Risk["Risk Assessment"]
+
+        Decision{"Authorization Decision"}
+
+    end
+
+    RequestCtx --> Normalize
+
+    Normalize --> RBAC
+    Normalize --> ABAC
+
+    RBAC --> Conditions
+    ABAC --> Conditions
+
+    Conditions --> Risk
+    Risk --> Decision
+
+    %% =====================================================
+    %% Protected Resources
+    %% =====================================================
+
+    subgraph Resources["Protected Platform Resources"]
+
+        Control["Control Plane"]
+
+        Deployments["Deployment APIs"]
+
+        Workflows["Workflow Engine"]
+
+        Scheduler["Distributed Scheduler"]
+
+        Secrets["Secret Management"]
+
+        Inventory["Inventory Service"]
+
+        Runtime["Runtime Operations"]
+
+        AuditAPI["Audit APIs"]
+
+    end
+
+    Decision -->|Allow| Control
+    Decision -->|Allow| Deployments
+    Decision -->|Allow| Workflows
+    Decision -->|Allow| Scheduler
+    Decision -->|Allow| Secrets
+    Decision -->|Allow| Inventory
+    Decision -->|Allow| Runtime
+    Decision -->|Allow| AuditAPI
+
+    %% =====================================================
+    %% Deny Path
+    %% =====================================================
+
+    subgraph Deny["Access Denied"]
+
+        Reject["Reject Request"]
+
+        Reason["Decision Reason"]
+
+        SecurityLog["Security Audit"]
+
+        Alert["Security Alert"]
+
+    end
+
+    Decision -->|Deny| Reject
+
+    Reject --> Reason
+    Reason --> SecurityLog
+    SecurityLog --> Alert
+
+    %% =====================================================
+    %% Continuous Authorization
+    %% =====================================================
+
+    subgraph Continuous["Continuous Authorization"]
+
+        SessionCheck["Session Validation"]
+
+        PolicyRefresh["Policy Refresh"]
+
+        ContextUpdate["Context Update"]
+
+        ReEvaluate["Re-Evaluate Policies"]
+
+    end
+
+    Control --> SessionCheck
+    Deployments --> SessionCheck
+    Workflows --> SessionCheck
+    Scheduler --> SessionCheck
+
+    SessionCheck --> PolicyRefresh
+    PolicyRefresh --> ContextUpdate
+    ContextUpdate --> ReEvaluate
+
+    ReEvaluate --> Decision
+
+    %% =====================================================
+    %% Audit & Events
+    %% =====================================================
+
+    subgraph Observability["Observability"]
+
+        Audit["Authorization Audit"]
+
+        Events["Security Events"]
+
+        Metrics["Authorization Metrics"]
+
+        Dashboard["Security Dashboard"]
+
+    end
+
+    Decision --> Audit
+
+    Audit --> Events
+    Audit --> Metrics
+
+    Events --> Dashboard
+    Metrics --> Dashboard
+
+    %% =====================================================
+    %% Policy Inputs
+    %% =====================================================
+
+    Inputs["Policy Inputs
+
+• Identity
+• Roles
+• Groups
+• Attributes
+• Resource
+• Requested Action
+• Time
+• Network Context
+• Device Context
+• Risk Score
+• Site Policies
+• Organization Policies"]
+
+    Inputs -.-> PolicyEngine
+
+    %% =====================================================
+    %% Authorization Principles
+    %% =====================================================
+
+    Principles["Authorization Principles
+
+• Default Deny
+• Least Privilege
+• Explicit Allow
+• Policy-Based Decisions
+• RBAC + ABAC
+• Context-Aware Access
+• Continuous Re-Evaluation
+• Fully Auditable"]
+
+    Principles -.-> PolicyEngine
+    Principles -.-> Continuous
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef identity fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef request fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef policy fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef resource fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class User,Service,Agent,API,Session,Claims,Roles,Attributes,Groups identity
+
+    class Resource,Action,Environment,RequestCtx request
+
+    class Normalize,RBAC,ABAC,Conditions,Risk,Decision policy
+
+    class Control,Deployments,Workflows,Scheduler,Secrets,Inventory,Runtime,AuditAPI resource
+
+    class Reject,Reason,SecurityLog,Alert,SessionCheck,PolicyRefresh,ContextUpdate,ReEvaluate,Audit,Events,Metrics,Dashboard security
+
+    class Inputs,Principles note

@@ -1,0 +1,268 @@
+---
+title: BeaconLink Peer-to-Peer Networking
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Planner["Deployment Planner"]
+        Scheduler["Distributed Scheduler"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+
+    end
+
+    %% =====================================================
+    %% Relay Network
+    %% =====================================================
+
+    subgraph Relay["Relay Network"]
+
+        Router["Relay Router"]
+
+        RelayA["Relay A"]
+        RelayB["Relay B"]
+        RelayC["Relay C"]
+
+        Router --> RelayA
+        Router --> RelayB
+        Router --> RelayC
+
+        RelayA <-. Federation .-> RelayB
+        RelayB <-. Federation .-> RelayC
+        RelayC <-. Federation .-> RelayA
+
+    end
+
+    Planner --> Router
+    Scheduler --> Router
+    Workflow --> Router
+    Policy --> Router
+
+    %% =====================================================
+    %% Sites
+    %% =====================================================
+
+    subgraph SiteA["Production Site A"]
+
+        AgentA["BeaconLink Agent"]
+
+        RuntimeA["Runtime Adapter"]
+
+    end
+
+    subgraph SiteB["Production Site B"]
+
+        AgentB["BeaconLink Agent"]
+
+        RuntimeB["Runtime Adapter"]
+
+    end
+
+    subgraph SiteC["Edge Site"]
+
+        AgentC["BeaconLink Agent"]
+
+        RuntimeC["Runtime Adapter"]
+
+    end
+
+    RelayA --> AgentA
+    RelayB --> AgentB
+    RelayC --> AgentC
+
+    AgentA --> RuntimeA
+    AgentB --> RuntimeB
+    AgentC --> RuntimeC
+
+    %% =====================================================
+    %% Peer Session Negotiation
+    %% =====================================================
+
+    subgraph Negotiation["Peer Session Establishment"]
+
+        Request["Peer Session Request"]
+
+        Authorize["Policy Authorization"]
+
+        Discover["Peer Discovery"]
+
+        Exchange["Connection Metadata Exchange"]
+
+        Establish["Secure Peer Session"]
+
+    end
+
+    AgentA --> Request
+    AgentB --> Request
+
+    Request --> Authorize
+    Authorize --> Discover
+    Discover --> Exchange
+    Exchange --> Establish
+
+    %% =====================================================
+    %% Peer Communication
+    %% =====================================================
+
+    subgraph Peer["Peer-to-Peer Data Plane"]
+
+        Sync["Artifact Synchronization"]
+
+        Transfer["Large File Transfer"]
+
+        Replication["State Replication"]
+
+        Streaming["Data Streaming"]
+
+    end
+
+    Establish --> Sync
+    Establish --> Transfer
+    Establish --> Replication
+    Establish --> Streaming
+
+    Sync <---> AgentA
+    Sync <---> AgentB
+
+    Transfer <---> AgentA
+    Transfer <---> AgentB
+
+    Replication <---> AgentB
+    Replication <---> AgentC
+
+    Streaming <---> AgentA
+    Streaming <---> AgentC
+
+    %% =====================================================
+    %% Control Channel
+    %% =====================================================
+
+    subgraph ControlChannel["Control Channel"]
+
+        Commands["Control Messages"]
+
+        Status["Session Status"]
+
+        Audit["Audit Events"]
+
+    end
+
+    Router --> Commands
+
+    Commands --> AgentA
+    Commands --> AgentB
+    Commands --> AgentC
+
+    AgentA --> Status
+    AgentB --> Status
+    AgentC --> Status
+
+    Status --> Router
+    Audit --> Router
+
+    %% =====================================================
+    %% Security
+    %% =====================================================
+
+    subgraph Security["Peer Security"]
+
+        Identity["Identity Verification"]
+
+        MTLS["Mutual TLS"]
+
+        Tokens["Short-Lived Session Tokens"]
+
+        Encryption["End-to-End Encryption"]
+
+    end
+
+    Authorize --> Identity
+    Identity --> MTLS
+    MTLS --> Tokens
+    Tokens --> Encryption
+    Encryption --> Establish
+
+    %% =====================================================
+    %% Failure Handling
+    %% =====================================================
+
+    subgraph Recovery["Connection Recovery"]
+
+        Detect["Session Failure"]
+
+        Retry["Reconnect"]
+
+        Resume["Resume Transfer"]
+
+    end
+
+    Establish -. Failure .-> Detect
+    Detect --> Retry
+    Retry --> Establish
+    Resume --> Transfer
+
+    %% =====================================================
+    %% Use Cases
+    %% =====================================================
+
+    UseCases["Peer Networking Use Cases
+
+• Artifact Distribution
+• Site-to-Site Replication
+• Backup Synchronization
+• Log Collection
+• Data Migration
+• Large Image Transfer
+• Edge Content Distribution
+• Cluster Synchronization"]
+
+    UseCases -.-> Peer
+
+    %% =====================================================
+    %% Principles
+    %% =====================================================
+
+    Principles["Design Principles
+
+• Relay-Controlled Session Setup
+• Peer Data Plane
+• Zero Trust Authentication
+• Mutual TLS
+• End-to-End Encryption
+• Policy-Governed Connectivity
+• Outbound Connection Initiation
+• Automatic Recovery
+• Runtime Independent"]
+
+    Principles -.-> Negotiation
+    Principles -.-> Security
+    Principles -.-> Peer
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef relay fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef agent fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef peer fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Planner,Scheduler,Workflow,Policy control
+
+    class Router,RelayA,RelayB,RelayC relay
+
+    class AgentA,AgentB,AgentC,RuntimeA,RuntimeB,RuntimeC agent
+
+    class Request,Authorize,Discover,Exchange,Establish,Sync,Transfer,Replication,Streaming,Commands,Status,Audit,Detect,Retry,Resume peer
+
+    class Identity,MTLS,Tokens,Encryption security
+
+    class UseCases,Principles note

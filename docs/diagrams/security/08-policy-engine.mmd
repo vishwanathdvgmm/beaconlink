@@ -1,0 +1,316 @@
+---
+title: BeaconLink Policy Engine Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Policy Consumers
+    %% =====================================================
+
+    subgraph Consumers["Policy Consumers"]
+
+        API["API Gateway"]
+        Scheduler["Distributed Scheduler"]
+        Workflow["Workflow Engine"]
+        Deployment["Deployment Planner"]
+        Runtime["Runtime Manager"]
+        Agent["BeaconLink Agent"]
+        Secrets["Secret Management"]
+        Relay["Relay Network"]
+
+    end
+
+    %% =====================================================
+    %% Policy Requests
+    %% =====================================================
+
+    subgraph Requests["Policy Evaluation Requests"]
+
+        Identity["Identity Context"]
+
+        Resource["Target Resource"]
+
+        Action["Requested Action"]
+
+        Environment["Execution Context"]
+
+        Request["Normalized Policy Request"]
+
+    end
+
+    API --> Request
+    Scheduler --> Request
+    Workflow --> Request
+    Deployment --> Request
+    Runtime --> Request
+    Agent --> Request
+    Secrets --> Request
+    Relay --> Request
+
+    Identity --> Request
+    Resource --> Request
+    Action --> Request
+    Environment --> Request
+
+    %% =====================================================
+    %% Policy Engine
+    %% =====================================================
+
+    subgraph Engine["BeaconLink Policy Engine"]
+
+        Parser["Policy Parser"]
+
+        Compiler["Policy Compiler"]
+
+        Validator["Policy Validation"]
+
+        Optimizer["Rule Optimizer"]
+
+        Evaluator["Policy Evaluator"]
+
+    end
+
+    Request --> Parser
+    Parser --> Compiler
+    Compiler --> Validator
+    Validator --> Optimizer
+    Optimizer --> Evaluator
+
+    %% =====================================================
+    %% Policy Repository
+    %% =====================================================
+
+    subgraph Repository["Policy Repository"]
+
+        Org["Organization Policies"]
+
+        Site["Site Policies"]
+
+        Security["Security Policies"]
+
+        DeploymentPolicy["Deployment Policies"]
+
+        RuntimePolicy["Runtime Policies"]
+
+        Compliance["Compliance Policies"]
+
+    end
+
+    Org --> Evaluator
+    Site --> Evaluator
+    Security --> Evaluator
+    DeploymentPolicy --> Evaluator
+    RuntimePolicy --> Evaluator
+    Compliance --> Evaluator
+
+    %% =====================================================
+    %% Decision Engine
+    %% =====================================================
+
+    subgraph Decisions["Decision Engine"]
+
+        RBAC["RBAC Rules"]
+
+        ABAC["ABAC Rules"]
+
+        Risk["Risk Evaluation"]
+
+        Conditions["Policy Conditions"]
+
+        Decision{"Policy Decision"}
+
+    end
+
+    Evaluator --> RBAC
+    Evaluator --> ABAC
+
+    RBAC --> Risk
+    ABAC --> Risk
+
+    Risk --> Conditions
+    Conditions --> Decision
+
+    %% =====================================================
+    %% Enforcement
+    %% =====================================================
+
+    subgraph Enforcement["Policy Enforcement"]
+
+        Allow["Allow"]
+
+        Deny["Deny"]
+
+        Challenge["Require Additional Verification"]
+
+        Quarantine["Restrict Operation"]
+
+    end
+
+    Decision -->|Allow| Allow
+    Decision -->|Deny| Deny
+    Decision -->|Conditional| Challenge
+    Decision -->|Restricted| Quarantine
+
+    %% =====================================================
+    %% Runtime Enforcement
+    %% =====================================================
+
+    subgraph RuntimeControls["Runtime Enforcement"]
+
+        Execute["Execute Operation"]
+
+        Block["Block Operation"]
+
+        SecretAccess["Secret Access"]
+
+        DeploymentApproval["Deployment Approval"]
+
+        NetworkAccess["Relay Authorization"]
+
+    end
+
+    Allow --> Execute
+    Allow --> SecretAccess
+    Allow --> DeploymentApproval
+    Allow --> NetworkAccess
+
+    Deny --> Block
+    Challenge --> Block
+    Quarantine --> Block
+
+    %% =====================================================
+    %% Continuous Policy Evaluation
+    %% =====================================================
+
+    subgraph Continuous["Continuous Evaluation"]
+
+        Heartbeat["Heartbeat Events"]
+
+        Drift["Drift Detection"]
+
+        Context["Context Changes"]
+
+        Reevaluate["Re-Evaluate Policies"]
+
+    end
+
+    Execute --> Heartbeat
+
+    Heartbeat --> Drift
+    Drift --> Context
+    Context --> Reevaluate
+    Reevaluate --> Evaluator
+
+    %% =====================================================
+    %% Audit & Events
+    %% =====================================================
+
+    subgraph Audit["Audit & Observability"]
+
+        AuditTrail["Policy Audit Trail"]
+
+        EventBus["Event Streaming Platform"]
+
+        Dashboard["Security Dashboard"]
+
+        Alerts["Policy Alerts"]
+
+    end
+
+    Decision --> AuditTrail
+    Execute --> AuditTrail
+    Block --> AuditTrail
+
+    AuditTrail --> EventBus
+    EventBus --> Dashboard
+    EventBus --> Alerts
+
+    %% =====================================================
+    %% Policy Lifecycle
+    %% =====================================================
+
+    subgraph Lifecycle["Policy Lifecycle"]
+
+        Author["Author Policies"]
+
+        Review["Review"]
+
+        Approve["Approval"]
+
+        Publish["Publish"]
+
+        Version["Immutable Policy Revisions"]
+
+        Rollback["Rollback"]
+
+    end
+
+    Author --> Review
+    Review --> Approve
+    Approve --> Publish
+    Publish --> Version
+    Version --> Repository
+    Version --> Rollback
+    Rollback --> Repository
+
+    %% =====================================================
+    %% Policy Types
+    %% =====================================================
+
+    Types["Policy Categories
+
+• Authentication
+• Authorization
+• Deployment Governance
+• Runtime Security
+• Secret Access
+• Network Access
+• Compliance
+• Resource Quotas
+• Operational Safety"]
+
+    Types -.-> Repository
+
+    %% =====================================================
+    %% Policy Principles
+    %% =====================================================
+
+    Principles["Policy Engine Principles
+
+• Declarative Policies
+• Centralized Enforcement
+• Runtime Independent
+• Continuous Evaluation
+• Default Deny
+• Least Privilege
+• Immutable Policy Versions
+• Event Driven Decisions
+• Fully Auditable"]
+
+    Principles -.-> Engine
+    Principles -.-> Decisions
+    Principles -.-> Lifecycle
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef engine fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef repository fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class API,Scheduler,Workflow,Deployment,Runtime,Agent,Secrets,Relay,Identity,Resource,Action,Environment,Request control
+
+    class Parser,Compiler,Validator,Optimizer,Evaluator engine
+
+    class Org,Site,Security,DeploymentPolicy,RuntimePolicy,Compliance,RBAC,ABAC,Risk,Conditions,Decision repository
+
+    class Allow,Deny,Challenge,Quarantine,Execute,Block,SecretAccess,DeploymentApproval,NetworkAccess,Heartbeat,Drift,Context,Reevaluate runtime
+
+    class AuditTrail,EventBus,Dashboard,Alerts,Author,Review,Approve,Publish,Version,Rollback security
+
+    class Types,Principles note

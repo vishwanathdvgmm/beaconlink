@@ -1,0 +1,235 @@
+---
+title: BeaconLink Policy Management Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Administrator])
+
+Operator --> PolicyUI
+
+%% =====================================================
+%% Policy Management
+%% =====================================================
+
+subgraph PolicyUI["Policy Management"]
+
+direction TB
+
+Header["Policy Management
+────────────────────────
+Zero Trust • Governance • Compliance"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Create["Create Policy"]
+
+Import["Import Policy"]
+
+Validate["Validate"]
+
+Simulate["Policy Simulation"]
+
+Publish["Publish Revision"]
+
+Rollback["Rollback"]
+
+Delete["Delete"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Policy Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+LibraryNav["Policy Library"]
+
+AssignmentsNav["Assignments"]
+
+EvaluationNav["Evaluations"]
+
+ComplianceNav["Compliance"]
+
+VersionsNav["Immutable Revisions"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph PolicyDetails["Policy Definition"]
+
+direction TB
+
+Metadata["Metadata
+• Name
+• Category
+• Owner
+• Version"]
+
+Rules["Policy Rules
+• Conditions
+• Constraints
+• Expressions"]
+
+Targets["Assignment Targets
+• Organizations
+• Sites
+• Agents
+• Workloads"]
+
+Enforcement["Enforcement
+• Audit
+• Warn
+• Enforce
+• Block"]
+
+Lifecycle["Lifecycle
+• Draft
+• Published
+• Deprecated
+• Archived"]
+
+DesiredState["Desired State
+• Active Revision
+• Rollout Status
+• Synchronization"]
+
+end
+
+%% =====================================================
+
+subgraph Evaluation["Policy Evaluation"]
+
+direction TB
+
+Requests["Evaluation Requests"]
+
+Results["Decision Results"]
+
+Violations["Policy Violations"]
+
+Exceptions["Approved Exceptions"]
+
+History["Evaluation History"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Governance & Observability"]
+
+direction LR
+
+Compliance["Compliance Dashboard"]
+
+Events["Live Policy Events"]
+
+Metrics["Evaluation Metrics"]
+
+AuditTrail["Audit Timeline"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+PolicyEngine["Policy Engine"]
+
+Inventory["Inventory Service"]
+
+WorkflowEngine["Workflow Engine"]
+
+Scheduler["Distributed Scheduler"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+PolicyDetails --> PolicyEngine
+
+PolicyDetails --> Inventory
+
+Evaluation --> PolicyEngine
+
+Evaluation --> WorkflowEngine
+
+BottomPanels --> Monitoring
+
+BottomPanels --> EventsSvc
+
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Administrative Operations
+%% =====================================================
+
+Create --> PolicyEngine
+
+Import --> PolicyEngine
+
+Validate --> PolicyEngine
+
+Simulate --> PolicyEngine
+
+Publish --> WorkflowEngine
+
+Rollback --> WorkflowEngine
+
+Delete --> PolicyEngine
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+PolicyEngine -. Evaluation Results .-> Results
+
+PolicyEngine -. Violation Events .-> Violations
+
+PolicyEngine -. Active Revision .-> DesiredState
+
+Inventory -. Assignment Updates .-> Targets
+
+WorkflowEngine -. Rollout Progress .-> Lifecycle
+
+Monitoring -. Evaluation Metrics .-> Metrics
+
+EventsSvc -. Live Policy Events .-> Events
+
+AuditSvc -. Audit Records .-> AuditTrail
+
+PolicyEngine -. Compliance Status .-> Compliance

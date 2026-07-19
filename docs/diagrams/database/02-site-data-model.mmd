@@ -1,0 +1,162 @@
+---
+title: BeaconLink Site Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Site
+    %% =====================================================
+
+    class Site {
+        +UUID id
+        +String name
+        +String description
+        +SiteType type
+        +Region region
+        +TimeZone timezone
+        +SiteStatus status
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    %% =====================================================
+    %% Infrastructure
+    %% =====================================================
+
+    class Relay {
+        +UUID id
+        +String name
+        +String endpoint
+        +RelayStatus status
+        +String version
+    }
+
+    class Agent {
+        +UUID id
+        +String hostname
+        +String operatingSystem
+        +String architecture
+        +String version
+        +AgentStatus status
+        +DateTime lastSeen
+    }
+
+    class Runtime {
+        +UUID id
+        +RuntimeType type
+        +String provider
+        +String version
+    }
+
+    %% =====================================================
+    %% Configuration
+    %% =====================================================
+
+    class SiteManifest {
+        +UUID id
+        +String version
+        +Checksum checksum
+        +ManifestStatus status
+    }
+
+    class Configuration {
+        +UUID id
+        +String key
+        +String value
+        +ConfigurationScope scope
+    }
+
+    class Policy {
+        +UUID id
+        +String name
+        +PolicyType type
+    }
+
+    class SecretReference {
+        +UUID id
+        +String name
+        +SecretProvider provider
+    }
+
+    %% =====================================================
+    %% Deployments
+    %% =====================================================
+
+    class Deployment {
+        +UUID id
+        +String name
+        +DeploymentStatus status
+        +Revision revision
+    }
+
+    %% =====================================================
+    %% Operations
+    %% =====================================================
+
+    class HealthStatus {
+        +UUID id
+        +HealthState state
+        +DateTime lastUpdated
+    }
+
+    class Inventory {
+        +UUID id
+        +String hardware
+        +String software
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Site "1" --> "1" SiteManifest : described by
+
+    Site "1" --> "*" Relay : connected through
+
+    Site "1" --> "*" Agent : manages
+
+    Agent "1" --> "1" Runtime : executes on
+
+    Site "1" --> "*" Deployment : hosts
+
+    Site "1" --> "*" Configuration : contains
+
+    Site "1" --> "*" Policy : governed by
+
+    Site "1" --> "*" SecretReference : references
+
+    Agent "1" --> "1" HealthStatus : reports
+
+    Agent "1" --> "1" Inventory : maintains
+
+    Deployment --> Agent : executed by
+
+    Deployment --> SiteManifest : reconciles against
+
+    Policy --> SiteManifest : validates
+
+    Configuration --> SiteManifest : contributes to
+
+    SecretReference --> Deployment : consumed by
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef site fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef infra fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef config fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef deployment fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Site site
+
+    class Relay,Agent,Runtime infra
+
+    class SiteManifest,Configuration,Policy,SecretReference config
+
+    class Deployment deployment
+
+    class HealthStatus,Inventory operations

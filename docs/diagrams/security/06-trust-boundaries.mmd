@@ -1,0 +1,342 @@
+---
+title: BeaconLink Trust Boundaries
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% External Trust Zone
+    %% =====================================================
+
+    subgraph External["External Trust Zone"]
+
+        Operators["Platform Operators"]
+        Developers["Developers"]
+        Automation["CI/CD Systems"]
+        ExternalAPI["External APIs"]
+        Browsers["Web Browsers"]
+
+    end
+
+    %% =====================================================
+    %% Boundary 1
+    %% =====================================================
+
+    Boundary1{{"Trust Boundary #1
+
+Internet Edge"}}
+
+    External --> Boundary1
+
+    %% =====================================================
+    %% Platform Access Layer
+    %% =====================================================
+
+    subgraph Access["Platform Access Layer"]
+
+        APIGateway["API Gateway"]
+
+        Auth["Identity Provider"]
+
+        WAF["Web Application Firewall"]
+
+        RateLimit["Rate Limiting"]
+
+    end
+
+    Boundary1 --> WAF
+    WAF --> APIGateway
+    APIGateway --> RateLimit
+    RateLimit --> Auth
+
+    %% =====================================================
+    %% Boundary 2
+    %% =====================================================
+
+    Boundary2{{"Trust Boundary #2
+
+Identity Boundary"}}
+
+    Auth --> Boundary2
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph Control["BeaconLink Control Plane"]
+
+        Policy["Policy Engine"]
+
+        Scheduler["Distributed Scheduler"]
+
+        Workflow["Workflow Engine"]
+
+        Inventory["Inventory Service"]
+
+        Secret["Secret Management"]
+
+        Audit["Audit Service"]
+
+    end
+
+    Boundary2 --> Policy
+
+    Policy --> Scheduler
+    Policy --> Workflow
+    Policy --> Inventory
+    Policy --> Secret
+    Policy --> Audit
+
+    %% =====================================================
+    %% Boundary 3
+    %% =====================================================
+
+    Boundary3{{"Trust Boundary #3
+
+Relay Federation"}}
+
+    Scheduler --> Boundary3
+    Workflow --> Boundary3
+
+    %% =====================================================
+    %% Relay Network
+    %% =====================================================
+
+    subgraph Relay["Relay Network"]
+
+        Router["Global Relay Router"]
+
+        RelayA["Regional Relay A"]
+
+        RelayB["Regional Relay B"]
+
+        RelayC["Regional Relay C"]
+
+    end
+
+    Boundary3 --> Router
+
+    Router --> RelayA
+    Router --> RelayB
+    Router --> RelayC
+
+    %% =====================================================
+    %% Boundary 4
+    %% =====================================================
+
+    Boundary4{{"Trust Boundary #4
+
+Managed Site"}}
+
+    RelayA --> Boundary4
+    RelayB --> Boundary4
+    RelayC --> Boundary4
+
+    %% =====================================================
+    %% Customer Environment
+    %% =====================================================
+
+    subgraph Sites["Managed Infrastructure"]
+
+        Agent["BeaconLink Agent"]
+
+        Runtime["Runtime Manager"]
+
+        Adapter["Runtime Adapter"]
+
+        Kubernetes["Kubernetes"]
+
+        Docker["Docker"]
+
+        Nomad["Nomad"]
+
+        VMs["Virtual Machines"]
+
+    end
+
+    Boundary4 --> Agent
+
+    Agent --> Runtime
+    Runtime --> Adapter
+
+    Adapter --> Kubernetes
+    Adapter --> Docker
+    Adapter --> Nomad
+    Adapter --> VMs
+
+    %% =====================================================
+    %% Boundary 5
+    %% =====================================================
+
+    Boundary5{{"Trust Boundary #5
+
+Runtime Isolation"}}
+
+    Kubernetes --> Boundary5
+    Docker --> Boundary5
+    Nomad --> Boundary5
+    VMs --> Boundary5
+
+    %% =====================================================
+    %% Workloads
+    %% =====================================================
+
+    subgraph Workloads["Application Workloads"]
+
+        Apps["Applications"]
+
+        Services["Microservices"]
+
+        Jobs["Batch Jobs"]
+
+        Databases["Stateful Services"]
+
+    end
+
+    Boundary5 --> Apps
+    Boundary5 --> Services
+    Boundary5 --> Jobs
+    Boundary5 --> Databases
+
+    %% =====================================================
+    %% Security Enforcement
+    %% =====================================================
+
+    subgraph Enforcement["Security Enforcement"]
+
+        MTLS["Mutual TLS"]
+
+        Authz["Policy Authorization"]
+
+        Encryption["Encryption"]
+
+        Identity["Machine Identity"]
+
+        LeastPrivilege["Least Privilege"]
+
+    end
+
+    Boundary1 -.-> MTLS
+    Boundary2 -.-> Identity
+    Boundary3 -.-> Encryption
+    Boundary4 -.-> Authz
+    Boundary5 -.-> LeastPrivilege
+
+    %% =====================================================
+    %% Continuous Validation
+    %% =====================================================
+
+    subgraph Validation["Continuous Verification"]
+
+        Heartbeats["Agent Heartbeats"]
+
+        SessionValidation["Session Validation"]
+
+        Drift["Drift Detection"]
+
+        Risk["Risk Assessment"]
+
+        ReAuth["Continuous Re-Authorization"]
+
+    end
+
+    Agent --> Heartbeats
+
+    Heartbeats --> SessionValidation
+    SessionValidation --> Drift
+    Drift --> Risk
+    Risk --> ReAuth
+    ReAuth --> Policy
+
+    %% =====================================================
+    %% Audit & Observability
+    %% =====================================================
+
+    subgraph Observability["Observability"]
+
+        AuditTrail["Audit Trail"]
+
+        Events["Event Streaming Platform"]
+
+        SIEM["SIEM Integration"]
+
+        Dashboard["Security Dashboard"]
+
+    end
+
+    Auth --> AuditTrail
+    Policy --> AuditTrail
+    Router --> AuditTrail
+    Agent --> AuditTrail
+    Runtime --> AuditTrail
+
+    AuditTrail --> Events
+    Events --> SIEM
+    Events --> Dashboard
+
+    %% =====================================================
+    %% Trust Principles
+    %% =====================================================
+
+    Principles["Zero Trust Principles
+
+• Never Trust Network Location
+• Verify Every Identity
+• Authenticate Every Connection
+• Authorize Every Request
+• Encrypt Every Channel
+• Continuous Verification
+• Least Privilege Access
+• Assume Breach
+• Complete Auditability"]
+
+    Principles -.-> Enforcement
+    Principles -.-> Validation
+
+    %% =====================================================
+    %% Boundary Summary
+    %% =====================================================
+
+    Summary["Trust Boundaries
+
+1. Internet Edge
+2. Identity Boundary
+3. Relay Federation
+4. Managed Site
+5. Runtime Isolation
+
+Every boundary independently enforces
+authentication, authorization,
+encryption, and auditing."]
+
+    Summary -.-> Boundary1
+    Summary -.-> Boundary2
+    Summary -.-> Boundary3
+    Summary -.-> Boundary4
+    Summary -.-> Boundary5
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef external fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef boundary fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#000
+    classDef control fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef relay fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Operators,Developers,Automation,ExternalAPI,Browsers external
+
+    class Boundary1,Boundary2,Boundary3,Boundary4,Boundary5 boundary
+
+    class APIGateway,Auth,WAF,RateLimit,Policy,Scheduler,Workflow,Inventory,Secret,Audit control
+
+    class Router,RelayA,RelayB,RelayC relay
+
+    class Agent,Runtime,Adapter,Kubernetes,Docker,Nomad,VMs,Apps,Services,Jobs,Databases runtime
+
+    class MTLS,Authz,Encryption,Identity,LeastPrivilege,Heartbeats,SessionValidation,Drift,Risk,ReAuth,AuditTrail,Events,SIEM,Dashboard security
+
+    class Principles,Summary note

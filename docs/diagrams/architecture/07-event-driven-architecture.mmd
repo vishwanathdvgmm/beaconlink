@@ -1,0 +1,149 @@
+---
+title: BeaconLink Event-Driven Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Event Producers
+    %% =====================================================
+
+    subgraph Producers["Event Producers"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+        Secrets["Secret Management"]
+        Plugins["Plugin Manager"]
+        Relay["Relay Cluster"]
+        Agent["BeaconLink Agent"]
+
+    end
+
+    %% =====================================================
+    %% Event Backbone
+    %% =====================================================
+
+    subgraph EventPlatform["Event Streaming Platform"]
+
+        Topics["Event Topics"]
+
+        DeployTopic["Deployment Events"]
+        AgentTopic["Agent Events"]
+        PolicyTopic["Policy Events"]
+        WorkflowTopic["Workflow Events"]
+        SecurityTopic["Security Events"]
+        AuditTopic["Audit Events"]
+
+    end
+
+    %% =====================================================
+    %% Event Consumers
+    %% =====================================================
+
+    subgraph Consumers["Event Consumers"]
+
+        DeployConsumer["Deployment Engine"]
+        WorkflowConsumer["Workflow Engine"]
+        PolicyConsumer["Policy Engine"]
+        SchedulerConsumer["Distributed Scheduler"]
+        Observability["Observability"]
+        Audit["Audit Log"]
+        Notification["Notification Service"]
+        Dashboard["BeaconLink Console"]
+
+    end
+
+    %% =====================================================
+    %% Event Publication
+    %% =====================================================
+
+    Deploy --> Topics
+    Workflow --> Topics
+    Policy --> Topics
+    Scheduler --> Topics
+    Secrets --> Topics
+    Plugins --> Topics
+    Relay --> Topics
+    Agent --> Topics
+
+    %% =====================================================
+    %% Topic Routing
+    %% =====================================================
+
+    Topics --> DeployTopic
+    Topics --> AgentTopic
+    Topics --> PolicyTopic
+    Topics --> WorkflowTopic
+    Topics --> SecurityTopic
+    Topics --> AuditTopic
+
+    %% =====================================================
+    %% Event Consumption
+    %% =====================================================
+
+    DeployTopic --> DeployConsumer
+    DeployTopic --> Dashboard
+    DeployTopic --> Observability
+
+    AgentTopic --> WorkflowConsumer
+    AgentTopic --> Dashboard
+    AgentTopic --> Observability
+
+    PolicyTopic --> PolicyConsumer
+    PolicyTopic --> Audit
+
+    WorkflowTopic --> WorkflowConsumer
+    WorkflowTopic --> SchedulerConsumer
+
+    SecurityTopic --> Audit
+    SecurityTopic --> Notification
+
+    AuditTopic --> Audit
+    AuditTopic --> Observability
+
+    %% =====================================================
+    %% Event Flow
+    %% =====================================================
+
+    WorkflowConsumer --> Topics
+    DeployConsumer --> Topics
+    PolicyConsumer --> Topics
+    SchedulerConsumer --> Topics
+
+    %% =====================================================
+    %% Event Characteristics
+    %% =====================================================
+
+    Characteristics["Characteristics
+
+• Immutable Events
+• Asynchronous Delivery
+• Loose Coupling
+• Durable Storage
+• Multiple Consumers
+• Event Replay
+• Ordered Processing"]
+
+    Characteristics -.-> Topics
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef producer fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef broker fill:#FFF3E0,stroke:#EF6C00,color:#000;
+    classDef topic fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef consumer fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray: 5 5;
+
+    class Deploy,Workflow,Policy,Scheduler,Secrets,Plugins,Relay,Agent producer
+
+    class Topics broker
+
+    class DeployTopic,AgentTopic,PolicyTopic,WorkflowTopic,SecurityTopic,AuditTopic topic
+
+    class DeployConsumer,WorkflowConsumer,PolicyConsumer,SchedulerConsumer,Observability,Audit,Notification,Dashboard consumer
+
+    class Characteristics note

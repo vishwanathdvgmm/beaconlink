@@ -1,0 +1,162 @@
+---
+title: BeaconLink Agent Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Agent
+    %% =====================================================
+
+    class Agent {
+        +UUID id
+        +String hostname
+        +String version
+        +AgentStatus status
+        +DateTime registeredAt
+        +DateTime lastSeen
+    }
+
+    class AgentConfiguration {
+        +UUID id
+        +HeartbeatInterval interval
+        +LogLevel logLevel
+        +AutoUpdate enabled
+    }
+
+    class AgentCapability {
+        +UUID id
+        +CapabilityType type
+        +String version
+    }
+
+    %% =====================================================
+    %% Connectivity
+    %% =====================================================
+
+    class RelayConnection {
+        +UUID id
+        +ConnectionState state
+        +TLSVersion tlsVersion
+        +DateTime connectedAt
+    }
+
+    class Relay {
+        +UUID id
+        +String name
+        +String endpoint
+        +RelayStatus status
+    }
+
+    %% =====================================================
+    %% Runtime
+    %% =====================================================
+
+    class Runtime {
+        +UUID id
+        +RuntimeType type
+        +String provider
+        +String version
+    }
+
+    class RuntimeAdapter {
+        +UUID id
+        +String implementation
+        +AdapterVersion version
+    }
+
+    %% =====================================================
+    %% Execution
+    %% =====================================================
+
+    class DeploymentTask {
+        +UUID id
+        +TaskType type
+        +TaskStatus status
+        +Integer priority
+    }
+
+    class Workload {
+        +UUID id
+        +String name
+        +WorkloadState state
+    }
+
+    %% =====================================================
+    %% Observability
+    %% =====================================================
+
+    class HealthStatus {
+        +UUID id
+        +HealthState state
+        +Float cpuUsage
+        +Float memoryUsage
+        +Float diskUsage
+        +DateTime updatedAt
+    }
+
+    class Inventory {
+        +UUID id
+        +String operatingSystem
+        +String architecture
+        +Integer cpuCores
+        +Integer memoryMB
+    }
+
+    class Event {
+        +UUID id
+        +String type
+        +EventSeverity severity
+        +DateTime timestamp
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Agent "1" --> "1" AgentConfiguration : configured by
+
+    Agent "1" --> "*" AgentCapability : advertises
+
+    Agent "1" --> "1" RelayConnection : maintains
+
+    RelayConnection --> Relay : connected to
+
+    Agent "1" --> "1" Runtime : hosts
+
+    Runtime --> RuntimeAdapter : implemented by
+
+    Agent "1" --> "*" DeploymentTask : executes
+
+    DeploymentTask --> "*" Workload : manages
+
+    Agent "1" --> "1" HealthStatus : reports
+
+    Agent "1" --> "1" Inventory : publishes
+
+    Agent --> "*" Event : emits
+
+    DeploymentTask --> "*" Event : generates
+
+    RelayConnection --> "*" Event : reports
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef agent fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef connectivity fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef runtime fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef execution fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef observability fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Agent,AgentConfiguration,AgentCapability agent
+
+    class RelayConnection,Relay connectivity
+
+    class Runtime,RuntimeAdapter runtime
+
+    class DeploymentTask,Workload execution
+
+    class HealthStatus,Inventory,Event observability

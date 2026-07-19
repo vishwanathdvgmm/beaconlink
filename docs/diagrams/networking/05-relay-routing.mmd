@@ -1,0 +1,229 @@
+---
+title: BeaconLink Relay Routing Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Command Sources
+    %% =====================================================
+
+    subgraph Sources["Command Sources"]
+
+        Planner["Deployment Planner"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+
+    end
+
+    Planner --> Router
+    Workflow --> Router
+    Policy --> Router
+    Scheduler --> Router
+
+    %% =====================================================
+    %% Relay Router
+    %% =====================================================
+
+    subgraph Routing["Relay Routing Service"]
+
+        Router["Relay Router"]
+
+        Lookup["Site Lookup"]
+
+        Capability["Capability Matching"]
+
+        Locality["Regional Preference"]
+
+        Health["Relay Health"]
+
+        Decision["Routing Decision"]
+
+    end
+
+    Router --> Lookup
+    Lookup --> Capability
+    Capability --> Locality
+    Locality --> Health
+    Health --> Decision
+
+    %% =====================================================
+    %% Relay Cluster
+    %% =====================================================
+
+    subgraph Relays["Relay Cluster"]
+
+        RelayUS["US Relay"]
+        RelayEU["EU Relay"]
+        RelayAP["APAC Relay"]
+        RelayEdge["Edge Relay"]
+
+    end
+
+    Decision --> RelayUS
+    Decision --> RelayEU
+    Decision --> RelayAP
+    Decision --> RelayEdge
+
+    RelayUS <-. Synchronization .-> RelayEU
+    RelayEU <-. Synchronization .-> RelayAP
+    RelayAP <-. Synchronization .-> RelayEdge
+    RelayEdge <-. Synchronization .-> RelayUS
+
+    %% =====================================================
+    %% Managed Sites
+    %% =====================================================
+
+    subgraph Sites["Managed Sites"]
+
+        SiteA["Production Site A"]
+        SiteB["Production Site B"]
+        SiteC["Regional Site"]
+        SiteD["Edge Site"]
+
+    end
+
+    RelayUS --> SiteA
+    RelayEU --> SiteB
+    RelayAP --> SiteC
+    RelayEdge --> SiteD
+
+    %% =====================================================
+    %% Agent Sessions
+    %% =====================================================
+
+    subgraph Agents["Persistent Agent Sessions"]
+
+        AgentA["BeaconLink Agent"]
+        AgentB["BeaconLink Agent"]
+        AgentC["BeaconLink Agent"]
+        AgentD["BeaconLink Agent"]
+
+    end
+
+    SiteA --> AgentA
+    SiteB --> AgentB
+    SiteC --> AgentC
+    SiteD --> AgentD
+
+    %% =====================================================
+    %% Bidirectional Messaging
+    %% =====================================================
+
+    subgraph Messaging["Message Exchange"]
+
+        Commands["Deployment Commands"]
+        Status["Status Updates"]
+        Metrics["Metrics"]
+        Audit["Audit Events"]
+
+    end
+
+    Decision --> Commands
+
+    Commands --> RelayUS
+    Commands --> RelayEU
+    Commands --> RelayAP
+    Commands --> RelayEdge
+
+    AgentA --> Status
+    AgentB --> Status
+    AgentC --> Status
+    AgentD --> Status
+
+    AgentA --> Metrics
+    AgentB --> Metrics
+    AgentC --> Metrics
+    AgentD --> Metrics
+
+    AgentA --> Audit
+    AgentB --> Audit
+    AgentC --> Audit
+    AgentD --> Audit
+
+    Status --> Router
+    Metrics --> Router
+    Audit --> Router
+
+    %% =====================================================
+    %% Failover
+    %% =====================================================
+
+    subgraph Failover["Routing Failover"]
+
+        Detect["Relay Failure Detection"]
+        Select["Select Healthy Relay"]
+        Reconnect["Agent Reconnection"]
+        Resume["Resume Session"]
+
+    end
+
+    RelayUS -. Failure .-> Detect
+    RelayEU -. Failure .-> Detect
+    RelayAP -. Failure .-> Detect
+    RelayEdge -. Failure .-> Detect
+
+    Detect --> Select
+    Select --> Reconnect
+    Reconnect --> Resume
+
+    Resume --> Decision
+
+    %% =====================================================
+    %% Routing Policies
+    %% =====================================================
+
+    Policies["Routing Policies
+
+• Site Affinity
+• Geographic Locality
+• Capability Matching
+• Relay Health
+• Capacity Awareness
+• Latency Optimization
+• High Availability
+• Automatic Failover"]
+
+    Policies -.-> Routing
+
+    %% =====================================================
+    %% Design Principles
+    %% =====================================================
+
+    Principles["Relay Routing Principles
+
+• Relay-First Networking
+• No Direct Agent Access
+• Outbound Connections Only
+• Zero Trust Communication
+• Dynamic Routing
+• Session Resumption
+• Horizontal Scalability
+• Runtime Independent"]
+
+    Principles -.-> Relays
+    Principles -.-> Failover
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef routing fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef relay fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef site fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef events fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Planner,Workflow,Policy,Scheduler control
+
+    class Router,Lookup,Capability,Locality,Health,Decision routing
+
+    class RelayUS,RelayEU,RelayAP,RelayEdge relay
+
+    class SiteA,SiteB,SiteC,SiteD,AgentA,AgentB,AgentC,AgentD site
+
+    class Commands,Status,Metrics,Audit,Detect,Select,Reconnect,Resume events
+
+    class Policies,Principles note

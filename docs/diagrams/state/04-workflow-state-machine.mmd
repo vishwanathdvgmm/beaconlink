@@ -1,0 +1,201 @@
+---
+title: BeaconLink Workflow State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Workflow Creation
+    %% =====================================================
+
+    [*] --> Created
+
+    Created : Workflow Requested
+    Created : Workflow ID Assigned
+    Created : Metadata Persisted
+
+    Created --> Initializing
+
+    %% =====================================================
+    %% Initialization
+    %% =====================================================
+
+    Initializing : Load Workflow Definition
+    Initializing : Validate Parameters
+    Initializing : Initialize Context
+    Initializing : Allocate Resources
+
+    Initializing --> Validating
+
+    Validating : Validate Workflow Schema
+    Validating : Validate Dependencies
+    Validating : Validate Permissions
+
+    Validating --> Planning : Validation Successful
+    Validating --> Failed : Validation Failed
+
+    %% =====================================================
+    %% Planning
+    %% =====================================================
+
+    Planning : Build Execution Graph
+    Planning : Resolve Task Dependencies
+    Planning : Create Execution Stages
+    Planning : Compute Parallel Tasks
+
+    Planning --> Scheduling
+
+    Scheduling : Select Execution Targets
+    Scheduling : Reserve Agent Capacity
+    Scheduling : Apply Placement Policies
+
+    Scheduling --> Queued : Resources Reserved
+    Scheduling --> Waiting : Capacity Unavailable
+
+    Waiting : Await Available Resources
+
+    Waiting --> Scheduling : Capacity Available
+    Waiting --> Cancelled : Cancellation Requested
+
+    %% =====================================================
+    %% Execution Lifecycle
+    %% =====================================================
+
+    Queued : Await Execution Slot
+
+    Queued --> Running
+
+    state Running {
+
+        [*] --> StageStarting
+
+        StageStarting : Initialize Stage
+        StageStarting : Publish StageStarted Event
+
+        StageStarting --> ExecutingTasks
+
+        state ExecutingTasks {
+
+            [*] --> Dispatching
+
+            Dispatching : Send Tasks to Agents
+            Dispatching : Create Execution Context
+
+            Dispatching --> AwaitingResults
+
+            AwaitingResults : Wait for Task Completion
+            AwaitingResults : Aggregate Results
+
+            AwaitingResults --> Dispatching : Additional Tasks
+            AwaitingResults --> [*] : Stage Complete
+
+        }
+
+        ExecutingTasks --> StageVerification
+
+        StageVerification : Verify Stage Completion
+        StageVerification : Validate Outputs
+
+        StageVerification --> StageCompleted : Successful
+        StageVerification --> Retrying : Recoverable Failure
+        StageVerification --> Rollback : Critical Failure
+
+        StageCompleted : Publish StageCompleted Event
+
+        StageCompleted --> StageStarting : Next Stage
+        StageCompleted --> WorkflowCompleted : Final Stage
+
+        Retrying : Retry Failed Tasks
+
+        Retrying --> ExecutingTasks
+        Retrying --> Rollback : Retry Limit Exceeded
+
+        Rollback : Execute Compensation Actions
+        Rollback : Restore Previous State
+
+        Rollback --> WorkflowRolledBack
+        Rollback --> WorkflowFailed
+
+        WorkflowCompleted : All Stages Executed
+
+        WorkflowCompleted --> [*]
+
+        WorkflowRolledBack : Rollback Successful
+
+        WorkflowRolledBack --> [*]
+
+        WorkflowFailed : Execution Failed
+
+        WorkflowFailed --> [*]
+
+    }
+
+    %% =====================================================
+    %% Completion
+    %% =====================================================
+
+    Running --> Completed
+
+    Completed : Workflow Successful
+    Completed : Publish Completion Event
+    Completed : Persist Final State
+
+    Completed --> Archived
+
+    Archived : Immutable Execution History
+
+    Archived --> [*]
+
+    %% =====================================================
+    %% Pause / Resume
+    %% =====================================================
+
+    Running --> Paused : Pause Requested
+
+    Paused : Suspend Task Dispatch
+    Paused : Preserve Execution Context
+
+    Paused --> Running : Resume Requested
+    Paused --> Cancelled : Cancel Requested
+
+    %% =====================================================
+    %% Failure Handling
+    %% =====================================================
+
+    Failed : Workflow Initialization Failed
+    Failed : Await Operator Action
+
+    Failed --> Planning : Retry Workflow
+    Failed --> Cancelled : Cancel Requested
+
+    Cancelled : Workflow Cancelled
+    Cancelled : Cleanup Resources
+
+    Cancelled --> Archived
+
+    %% =====================================================
+    %% Timeout Handling
+    %% =====================================================
+
+    Running --> TimedOut : Execution Timeout
+
+    TimedOut : Stop Active Tasks
+    TimedOut : Publish Timeout Event
+
+    TimedOut --> RollbackPending
+
+    RollbackPending : Await Rollback Decision
+
+    RollbackPending --> Running : Continue Execution
+    RollbackPending --> Cancelled : Abort Workflow
+
+    %% =====================================================
+    %% Global Transitions
+    %% =====================================================
+
+    Running --> Failed : Internal Engine Failure
+    Planning --> Failed : Planning Failure
+    Scheduling --> Failed : Scheduler Failure
+    Queued --> Failed : Queue Failure
+    Initializing --> Failed : Initialization Failure

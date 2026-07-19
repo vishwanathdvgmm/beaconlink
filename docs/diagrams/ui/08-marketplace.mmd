@@ -1,0 +1,232 @@
+---
+title: BeaconLink Marketplace Interface
+---
+
+flowchart TB
+
+%% =====================================================
+%% User
+%% =====================================================
+
+Operator([Platform Operator])
+
+Operator --> MarketplaceUI
+
+%% =====================================================
+%% Marketplace
+%% =====================================================
+
+subgraph MarketplaceUI["BeaconLink Marketplace"]
+
+direction TB
+
+Header["Marketplace
+────────────────────────
+Plugin Framework • Templates • Extensions"]
+
+%% -----------------------------------------------------
+
+subgraph Toolbar["Toolbar"]
+
+direction LR
+
+Browse["Browse Catalog"]
+
+Search["Search"]
+
+Filters["Filters"]
+
+Import["Import Package"]
+
+Publish["Publish"]
+
+Refresh["Refresh Catalog"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Workspace["Marketplace Workspace"]
+
+direction LR
+
+%% =====================================================
+
+subgraph Navigation["Navigation"]
+
+direction TB
+
+CatalogNav["Catalog"]
+
+InstalledNav["Installed"]
+
+UpdatesNav["Updates"]
+
+TemplatesNav["Templates"]
+
+RepositoriesNav["Repositories"]
+
+PublishNav["Publisher Portal"]
+
+AuditNav["Audit"]
+
+end
+
+%% =====================================================
+
+subgraph Catalog["Marketplace Catalog"]
+
+direction TB
+
+Featured["Featured Packages"]
+
+Plugins["Plugin Framework"]
+
+Runtimes["Runtime Adapters"]
+
+Templates["Deployment Templates"]
+
+Policies["Policy Packs"]
+
+Workflows["Workflow Templates"]
+
+Integrations["Integrations"]
+
+end
+
+%% =====================================================
+
+subgraph PackageDetails["Selected Package"]
+
+direction TB
+
+Metadata["Metadata
+• Name
+• Version
+• Publisher
+• Category"]
+
+Compatibility["Compatibility
+• Runtime Support
+• Platform Version
+• Dependencies"]
+
+Security["Security
+• Signature
+• Checksum
+• Trust Level
+• Verification"]
+
+Lifecycle["Lifecycle
+• Install
+• Upgrade
+• Rollback
+• Remove"]
+
+Usage["Usage
+• Downloads
+• Ratings
+• Documentation
+• Release Notes"]
+
+end
+
+end
+
+%% -----------------------------------------------------
+
+subgraph BottomPanels["Marketplace Insights"]
+
+direction LR
+
+Downloads["Installed Packages"]
+
+Updates["Available Updates"]
+
+Events["Marketplace Events"]
+
+Audit["Installation History"]
+
+end
+
+end
+
+%% =====================================================
+%% BeaconLink Control Plane
+%% =====================================================
+
+subgraph ControlPlane["BeaconLink Control Plane"]
+
+direction LR
+
+PluginFramework["Plugin Framework"]
+
+Inventory["Inventory Service"]
+
+WorkflowEngine["Workflow Engine"]
+
+PolicyEngine["Policy Engine"]
+
+ArtifactRepo["Artifact Repository"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% Data Sources
+%% =====================================================
+
+Catalog --> ArtifactRepo
+
+Catalog --> PluginFramework
+
+PackageDetails --> PluginFramework
+
+PackageDetails --> PolicyEngine
+
+PackageDetails --> Inventory
+
+BottomPanels --> Monitoring
+
+BottomPanels --> EventsSvc
+
+BottomPanels --> AuditSvc
+
+%% =====================================================
+%% Marketplace Operations
+%% =====================================================
+
+Browse --> ArtifactRepo
+
+Search --> ArtifactRepo
+
+Import --> PluginFramework
+
+Publish --> ArtifactRepo
+
+Lifecycle --> WorkflowEngine
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+ArtifactRepo -. Catalog Updates .-> Catalog
+
+PluginFramework -. Installed Plugins .-> Downloads
+
+PluginFramework -. Compatibility Status .-> Compatibility
+
+PolicyEngine -. Security Validation .-> Security
+
+WorkflowEngine -. Installation Progress .-> Lifecycle
+
+Monitoring -. Update Metrics .-> Updates
+
+EventsSvc -. Marketplace Events .-> Events
+
+AuditSvc -. Installation Records .-> Audit

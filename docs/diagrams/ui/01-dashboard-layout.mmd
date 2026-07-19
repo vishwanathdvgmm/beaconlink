@@ -1,0 +1,201 @@
+---
+title: BeaconLink Dashboard Layout
+---
+
+flowchart TB
+
+%% =====================================================
+%% Browser
+%% =====================================================
+
+User([Platform Operator])
+
+User --> Browser
+
+%% =====================================================
+%% Dashboard
+%% =====================================================
+
+subgraph Browser["BeaconLink Web Console"]
+
+direction TB
+
+Header["Header
+────────────────────────
+BeaconLink Logo
+Organization
+Environment
+Global Search
+Notifications
+User Menu"]
+
+subgraph Body["Dashboard Workspace"]
+
+direction LR
+
+%% -----------------------------------------------------
+
+subgraph Sidebar["Navigation"]
+
+direction TB
+
+Overview["Overview"]
+
+Deployments["Deployments"]
+
+Infrastructure["Infrastructure"]
+
+Agents["Agents"]
+
+Workflows["Workflows"]
+
+Policies["Policies"]
+
+Secrets["Secrets"]
+
+Events["Events"]
+
+Audit["Audit Logs"]
+
+Plugins["Plugins"]
+
+Settings["Settings"]
+
+end
+
+%% -----------------------------------------------------
+
+subgraph Content["Main Content Area"]
+
+direction TB
+
+subgraph Summary["Platform Summary"]
+
+direction LR
+
+Health["Platform Health"]
+
+DeploymentsCard["Deployments"]
+
+AgentsCard["Agents"]
+
+SitesCard["Sites"]
+
+AlertsCard["Active Alerts"]
+
+end
+
+%% -------------------------------------------------
+
+subgraph Operational["Operational Overview"]
+
+direction LR
+
+Topology["Global Infrastructure Map"]
+
+Workload["Workload Distribution"]
+
+Runtime["Runtime Utilization"]
+
+end
+
+%% -------------------------------------------------
+
+subgraph Activity["Operational Activity"]
+
+direction LR
+
+EventsPanel["Live Event Stream"]
+
+WorkflowPanel["Workflow Activity"]
+
+DeploymentPanel["Recent Deployments"]
+
+end
+
+%% -------------------------------------------------
+
+subgraph Analytics["Observability"]
+
+direction LR
+
+Metrics["Metrics Dashboard"]
+
+Logs["Centralized Logs"]
+
+AuditPanel["Audit Timeline"]
+
+end
+
+end
+
+end
+
+Footer["Footer
+Version
+Cluster
+API Status
+Relay Status"]
+
+end
+
+Header ~~~ Body
+Body ~~~ Footer
+
+%% =====================================================
+%% Backend Services
+%% =====================================================
+
+subgraph Backend["BeaconLink Control Plane"]
+
+direction LR
+
+Inventory["Inventory Service"]
+
+WorkflowEngine["Workflow Engine"]
+
+Scheduler["Distributed Scheduler"]
+
+Policy["Policy Engine"]
+
+EventsSvc["Event Streaming Platform"]
+
+AuditSvc["Audit Service"]
+
+Monitoring["Observability Services"]
+
+end
+
+%% =====================================================
+%% UI Data Flow
+%% =====================================================
+
+Content --> Inventory
+
+Content --> WorkflowEngine
+
+Content --> Scheduler
+
+Content --> Policy
+
+Content --> EventsSvc
+
+Content --> AuditSvc
+
+Content --> Monitoring
+
+%% =====================================================
+%% Live Updates
+%% =====================================================
+
+EventsSvc -. WebSocket / SSE .-> EventsPanel
+
+WorkflowEngine -. Live Status .-> WorkflowPanel
+
+Inventory -. Health Updates .-> Health
+
+Scheduler -. Capacity Updates .-> Runtime
+
+Monitoring -. Metrics Stream .-> Metrics
+
+AuditSvc -. Audit Events .-> AuditPanel

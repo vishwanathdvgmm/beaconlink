@@ -1,0 +1,218 @@
+---
+title: BeaconLink Canary Deployment
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Existing Production
+    %% =====================================================
+
+    subgraph Stable["Stable Environment"]
+
+        StableApp["Application v1"]
+        StableHealth["Healthy Production"]
+
+    end
+
+    %% =====================================================
+    %% Canary Environment
+    %% =====================================================
+
+    subgraph Canary["Canary Environment"]
+
+        CanaryDeploy["Deploy Application v2"]
+        CanaryConfig["Apply Configuration"]
+        CanarySecrets["Inject Secrets"]
+        CanaryHealth["Health Verification"]
+
+    end
+
+    %% =====================================================
+    %% Deployment Pipeline
+    %% =====================================================
+
+    Manifest["Deployment Revision"]
+
+    Planner["Deployment Planner"]
+
+    Scheduler["Distributed Scheduler"]
+
+    Relay["Relay Network"]
+
+    Agent["BeaconLink Agent"]
+
+    Runtime["Runtime Adapter"]
+
+    Manifest --> Planner
+    Planner --> Scheduler
+    Scheduler --> Relay
+    Relay --> Agent
+    Agent --> Runtime
+
+    Runtime --> CanaryDeploy
+
+    CanaryDeploy --> CanaryConfig
+    CanaryConfig --> CanarySecrets
+    CanarySecrets --> CanaryHealth
+
+    %% =====================================================
+    %% Traffic Management
+    %% =====================================================
+
+    Users["Users"]
+
+    Gateway["API Gateway"]
+
+    Traffic["Traffic Router"]
+
+    Users --> Gateway
+    Gateway --> Traffic
+
+    Traffic --> StableApp
+    Traffic --> CanaryDeploy
+
+    %% =====================================================
+    %% Progressive Rollout
+    %% =====================================================
+
+    subgraph Progression["Traffic Progression"]
+
+        Five["5%"]
+        Ten["10%"]
+        TwentyFive["25%"]
+        Fifty["50%"]
+        Hundred["100%"]
+
+        Five --> Ten
+        Ten --> TwentyFive
+        TwentyFive --> Fifty
+        Fifty --> Hundred
+
+    end
+
+    CanaryHealth --> Five
+
+    %% =====================================================
+    %% Validation
+    %% =====================================================
+
+    subgraph Validation["Continuous Validation"]
+
+        Health["Health Checks"]
+        Metrics["Performance Metrics"]
+        Errors["Error Rates"]
+        Latency["Latency"]
+        Policies["Policy Compliance"]
+
+    end
+
+    Five --> Health
+    Ten --> Health
+    TwentyFive --> Health
+    Fifty --> Health
+
+    Health --> Metrics
+    Metrics --> Errors
+    Errors --> Latency
+    Latency --> Policies
+
+    %% =====================================================
+    %% Promotion Decision
+    %% =====================================================
+
+    Decision{"Validation Successful?"}
+
+    Policies --> Decision
+
+    Decision -->|Yes| Promote["Increase Traffic"]
+
+    Promote --> Hundred
+
+    Hundred --> Complete["Promote to Production"]
+
+    %% =====================================================
+    %% Rollback
+    %% =====================================================
+
+    Decision -->|No| Rollback["Remove Canary"]
+
+    Rollback --> StableApp
+
+    %% =====================================================
+    %% Completion
+    %% =====================================================
+
+    Cleanup["Retire Previous Revision"]
+
+    Complete --> Cleanup
+
+    %% =====================================================
+    %% Audit
+    %% =====================================================
+
+    Audit["Audit Trail"]
+
+    Events["Platform Events"]
+
+    Cleanup --> Audit
+    Rollback --> Audit
+
+    Audit --> Events
+
+    %% =====================================================
+    %% Canary Evaluation Criteria
+    %% =====================================================
+
+    Criteria["Promotion Criteria
+
+• Health Checks Pass
+• Error Rate Acceptable
+• Latency Within SLA
+• Resource Usage Stable
+• Policy Validation
+• No Drift Detected
+• Operator Approval (Optional)"]
+
+    Criteria -.-> Validation
+
+    %% =====================================================
+    %% Principles
+    %% =====================================================
+
+    Principles["Canary Principles
+
+• Progressive Delivery
+• Controlled Exposure
+• Continuous Monitoring
+• Automated Promotion
+• Automated Rollback
+• Risk Reduction
+• Immutable Revisions"]
+
+    Principles -.-> Canary
+    Principles -.-> Progression
+    Principles -.-> Validation
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef stable fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef canary fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef deploy fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef validation fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef operations fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class StableApp,StableHealth stable
+
+    class CanaryDeploy,CanaryConfig,CanarySecrets,CanaryHealth canary
+
+    class Manifest,Planner,Scheduler,Relay,Agent,Runtime deploy
+
+    class Five,Ten,TwentyFive,Fifty,Hundred,Health,Metrics,Errors,Latency,Policies,Decision validation
+
+    class Users,Gateway,Traffic,Promote,Complete,Rollback,Cleanup,Audit,Events operations
+
+    class Criteria,Principles note

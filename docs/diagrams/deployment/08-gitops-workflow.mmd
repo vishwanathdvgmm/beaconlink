@@ -1,0 +1,183 @@
+---
+title: BeaconLink GitOps Workflow
+---
+
+flowchart LR
+
+    %% =====================================================
+    %% Authoring
+    %% =====================================================
+
+    subgraph Developer["Developer Workflow"]
+
+        Dev["Developer"]
+        Manifest["Site Manifest"]
+        Policy["Policies"]
+        Config["Configuration"]
+
+    end
+
+    Dev --> Manifest
+    Dev --> Policy
+    Dev --> Config
+
+    %% =====================================================
+    %% Source Control
+    %% =====================================================
+
+    subgraph Git["Git Repository"]
+
+        PR["Pull Request"]
+        Review["Code Review"]
+        Merge["Merge to Main"]
+
+    end
+
+    Manifest --> PR
+    Policy --> PR
+    Config --> PR
+
+    PR --> Review
+    Review --> Merge
+
+    %% =====================================================
+    %% GitOps Controller
+    %% =====================================================
+
+    subgraph GitOps["GitOps Integration"]
+
+        Detect["Repository Watcher"]
+        Fetch["Fetch Revision"]
+        Validate["Manifest Validation"]
+        Planner["Deployment Planner"]
+
+    end
+
+    Merge --> Detect
+
+    Detect --> Fetch
+    Fetch --> Validate
+    Validate --> Planner
+
+    %% =====================================================
+    %% Deployment Pipeline
+    %% =====================================================
+
+    subgraph Deployment["Deployment Pipeline"]
+
+        Revision["Immutable Revision"]
+        Scheduler["Distributed Scheduler"]
+        Relay["Relay Network"]
+        Agent["BeaconLink Agent"]
+        Runtime["Runtime Adapter"]
+
+    end
+
+    Planner --> Revision
+
+    Revision --> Scheduler
+    Scheduler --> Relay
+    Relay --> Agent
+    Agent --> Runtime
+
+    %% =====================================================
+    %% Managed Infrastructure
+    %% =====================================================
+
+    subgraph Infrastructure["Managed Infrastructure"]
+
+        Workloads["Running Workloads"]
+
+    end
+
+    Runtime --> Workloads
+
+    %% =====================================================
+    %% Reconciliation
+    %% =====================================================
+
+    subgraph Reconciliation["Continuous Reconciliation"]
+
+        Inventory["Inventory"]
+        Drift["Drift Detection"]
+        Correct["Automatic Reconciliation"]
+
+    end
+
+    Workloads --> Inventory
+
+    Inventory --> Drift
+
+    Drift --> Correct
+
+    Correct --> Planner
+
+    %% =====================================================
+    %% Feedback
+    %% =====================================================
+
+    subgraph Feedback["Observability"]
+
+        Audit["Audit Trail"]
+        Events["Platform Events"]
+        Dashboard["Dashboard"]
+
+    end
+
+    Runtime --> Audit
+    Runtime --> Events
+
+    Events --> Dashboard
+
+    %% =====================================================
+    %% Optional Rollback
+    %% =====================================================
+
+    Rollback["Git Revert"]
+
+    Rollback --> Merge
+
+    %% =====================================================
+    %% GitOps Principles
+    %% =====================================================
+
+    Principles["GitOps Principles
+
+• Git as Source of Truth
+• Declarative Configuration
+• Pull-Based Synchronization
+• Immutable Revisions
+• Continuous Reconciliation
+• Automated Drift Correction
+• Versioned Rollback
+• Auditable Changes"]
+
+    Principles -.-> Git
+    Principles -.-> GitOps
+    Principles -.-> Reconciliation
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef author fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef git fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef controller fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef deployment fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef infra fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef feedback fill:#E0F2F1,stroke:#00695C,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class Dev,Manifest,Policy,Config author
+
+    class PR,Review,Merge,Rollback git
+
+    class Detect,Fetch,Validate,Planner controller
+
+    class Revision,Scheduler,Relay,Agent,Runtime deployment
+
+    class Workloads,Inventory,Drift,Correct infra
+
+    class Audit,Events,Dashboard feedback
+
+    class Principles note

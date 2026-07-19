@@ -1,0 +1,288 @@
+---
+title: BeaconLink Certificate Lifecycle
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Certificate Authorities
+    %% =====================================================
+
+    subgraph CA["Certificate Authority Infrastructure"]
+
+        RootCA["Root Certificate Authority"]
+
+        IntermediateCA["Intermediate CA"]
+
+        InternalPKI["BeaconLink Internal PKI"]
+
+        ExternalCA["External Enterprise CA"]
+
+    end
+
+    RootCA --> IntermediateCA
+    IntermediateCA --> InternalPKI
+    ExternalCA --> InternalPKI
+
+    %% =====================================================
+    %% Certificate Requests
+    %% =====================================================
+
+    subgraph Enrollment["Certificate Enrollment"]
+
+        AgentCSR["Agent CSR"]
+
+        RelayCSR["Relay CSR"]
+
+        ServiceCSR["Service CSR"]
+
+        UserCSR["Client Certificate Request"]
+
+        Validate["Identity Validation"]
+
+        Approve["Enrollment Approval"]
+
+    end
+
+    AgentCSR --> Validate
+    RelayCSR --> Validate
+    ServiceCSR --> Validate
+    UserCSR --> Validate
+
+    Validate --> Approve
+    Approve --> InternalPKI
+
+    %% =====================================================
+    %% Certificate Issuance
+    %% =====================================================
+
+    subgraph Issuance["Certificate Issuance"]
+
+        Issue["Issue X.509 Certificate"]
+
+        Sign["Digital Signature"]
+
+        Metadata["Certificate Metadata"]
+
+        Registry["Certificate Registry"]
+
+    end
+
+    InternalPKI --> Issue
+    Issue --> Sign
+    Sign --> Metadata
+    Metadata --> Registry
+
+    %% =====================================================
+    %% Distribution
+    %% =====================================================
+
+    subgraph Distribution["Secure Distribution"]
+
+        AgentStore["Agent Certificate Store"]
+
+        RelayStore["Relay Certificate Store"]
+
+        ServiceStore["Service Certificate Store"]
+
+        ClientStore["Client Certificate Store"]
+
+    end
+
+    Registry --> AgentStore
+    Registry --> RelayStore
+    Registry --> ServiceStore
+    Registry --> ClientStore
+
+    %% =====================================================
+    %% Operational Usage
+    %% =====================================================
+
+    subgraph Usage["Certificate Usage"]
+
+        MTLS["Mutual TLS"]
+
+        AgentAuth["Agent Authentication"]
+
+        RelayAuth["Relay Authentication"]
+
+        ServiceAuth["Service Authentication"]
+
+        Session["Secure Session Establishment"]
+
+    end
+
+    AgentStore --> MTLS
+    RelayStore --> MTLS
+    ServiceStore --> MTLS
+    ClientStore --> MTLS
+
+    MTLS --> AgentAuth
+    MTLS --> RelayAuth
+    MTLS --> ServiceAuth
+
+    AgentAuth --> Session
+    RelayAuth --> Session
+    ServiceAuth --> Session
+
+    %% =====================================================
+    %% Continuous Validation
+    %% =====================================================
+
+    subgraph Validation["Continuous Validation"]
+
+        Expiry["Expiration Monitoring"]
+
+        Revocation["Revocation Check"]
+
+        Trust["Trust Chain Validation"]
+
+        Health["Certificate Health"]
+
+    end
+
+    Session --> Expiry
+
+    Expiry --> Revocation
+    Revocation --> Trust
+    Trust --> Health
+
+    %% =====================================================
+    %% Renewal Workflow
+    %% =====================================================
+
+    subgraph Renewal["Automatic Renewal"]
+
+        Threshold["Renewal Threshold"]
+
+        RenewCSR["Generate New CSR"]
+
+        ReIssue["Re-Issue Certificate"]
+
+        Replace["Replace Active Certificate"]
+
+        Resume["Resume Secure Sessions"]
+
+    end
+
+    Health --> Threshold
+
+    Threshold --> RenewCSR
+    RenewCSR --> InternalPKI
+    InternalPKI --> ReIssue
+    ReIssue --> Replace
+    Replace --> Resume
+
+    %% =====================================================
+    %% Revocation Workflow
+    %% =====================================================
+
+    subgraph RevocationFlow["Revocation Lifecycle"]
+
+        Compromise["Compromise Detected"]
+
+        Revoke["Revoke Certificate"]
+
+        CRL["Update CRL / OCSP"]
+
+        Disconnect["Terminate Sessions"]
+
+        Rotate["Issue Replacement"]
+
+    end
+
+    Compromise --> Revoke
+    Revoke --> CRL
+    CRL --> Disconnect
+    Disconnect --> Rotate
+    Rotate --> InternalPKI
+
+    %% =====================================================
+    %% Audit & Compliance
+    %% =====================================================
+
+    subgraph Audit["Audit & Compliance"]
+
+        AuditTrail["Certificate Audit Trail"]
+
+        Events["Event Streaming Platform"]
+
+        Dashboard["PKI Dashboard"]
+
+        Alerts["Security Alerts"]
+
+    end
+
+    Issue --> AuditTrail
+    ReIssue --> AuditTrail
+    Revoke --> AuditTrail
+    Replace --> AuditTrail
+
+    AuditTrail --> Events
+    Events --> Dashboard
+    Events --> Alerts
+
+    %% =====================================================
+    %% Lifecycle States
+    %% =====================================================
+
+    States["Certificate Lifecycle
+
+• Requested
+• Validated
+• Approved
+• Issued
+• Distributed
+• Active
+• Renewing
+• Replaced
+• Revoked
+• Expired
+• Archived"]
+
+    States -.-> Enrollment
+    States -.-> Issuance
+    States -.-> Renewal
+    States -.-> RevocationFlow
+
+    %% =====================================================
+    %% Security Principles
+    %% =====================================================
+
+    Principles["PKI Principles
+
+• Mutual TLS Everywhere
+• Short-Lived Certificates
+• Automated Rotation
+• Continuous Validation
+• Revocation Enforcement
+• Hardware-Protected Root Keys
+• Complete Auditability
+• Zero Trust Identity"]
+
+    Principles -.-> CA
+    Principles -.-> Validation
+    Principles -.-> Audit
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef authority fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef enrollment fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef issuance fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef security fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class RootCA,IntermediateCA,InternalPKI,ExternalCA authority
+
+    class AgentCSR,RelayCSR,ServiceCSR,UserCSR,Validate,Approve enrollment
+
+    class Issue,Sign,Metadata,Registry,AgentStore,RelayStore,ServiceStore,ClientStore issuance
+
+    class MTLS,AgentAuth,RelayAuth,ServiceAuth,Session,Expiry,Revocation,Trust,Health,Threshold,RenewCSR,ReIssue,Replace,Resume runtime
+
+    class Compromise,Revoke,CRL,Disconnect,Rotate,AuditTrail,Events,Dashboard,Alerts security
+
+    class States,Principles note

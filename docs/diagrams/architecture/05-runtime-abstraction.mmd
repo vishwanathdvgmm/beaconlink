@@ -1,0 +1,145 @@
+---
+title: BeaconLink Runtime Abstraction Layer
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Desired State
+    %% =====================================================
+
+    Manifest["Site Manifest<br/>Desired State"]
+
+    %% =====================================================
+    %% Control Plane
+    %% =====================================================
+
+    subgraph ControlPlane["BeaconLink Control Plane"]
+
+        Deploy["Deployment Engine"]
+        Policy["Policy Engine"]
+        Workflow["Workflow Engine"]
+
+    end
+
+    Manifest --> Deploy
+    Deploy --> Policy
+    Policy --> Workflow
+
+    %% =====================================================
+    %% Agent
+    %% =====================================================
+
+    Workflow --> Agent
+
+    subgraph AgentLayer["BeaconLink Agent"]
+
+        RuntimeMgr["Runtime Manager"]
+
+        Selector["Runtime Selector"]
+
+        Adapter["Runtime Adapter Interface"]
+
+    end
+
+    Agent["Deployment Request"] --> RuntimeMgr
+
+    RuntimeMgr --> Selector
+    Selector --> Adapter
+
+    %% =====================================================
+    %% Runtime Providers
+    %% =====================================================
+
+    subgraph Providers["Runtime Providers"]
+
+        Docker["Docker Provider"]
+        Containerd["containerd Provider"]
+        Kubernetes["Kubernetes Provider"]
+        VM["Virtual Machine Provider"]
+        Wasm["WebAssembly Provider"]
+
+    end
+
+    Adapter --> Docker
+    Adapter --> Containerd
+    Adapter --> Kubernetes
+    Adapter --> VM
+    Adapter --> Wasm
+
+    %% =====================================================
+    %% Execution Targets
+    %% =====================================================
+
+    subgraph Targets["Execution Environments"]
+
+        Containers["Containers"]
+        Pods["Kubernetes Pods"]
+        VirtualMachines["Virtual Machines"]
+        WasmModules["WebAssembly Modules"]
+
+    end
+
+    Docker --> Containers
+    Containerd --> Containers
+    Kubernetes --> Pods
+    VM --> VirtualMachines
+    Wasm --> WasmModules
+
+    %% =====================================================
+    %% Feedback Loop
+    %% =====================================================
+
+    Containers --> Status["Runtime Status"]
+    Pods --> Status
+    VirtualMachines --> Status
+    WasmModules --> Status
+
+    Status --> RuntimeMgr
+    RuntimeMgr --> Deploy
+
+    %% =====================================================
+    %% Selection Inputs
+    %% =====================================================
+
+    Requirements["Application Requirements"]
+    Policies["Deployment Policies"]
+    Capabilities["Agent Capabilities"]
+
+    Requirements --> Selector
+    Policies --> Selector
+    Capabilities --> Selector
+
+    %% =====================================================
+    %% Runtime Independence
+    %% =====================================================
+
+    Note["Applications target the Runtime Abstraction Layer—not individual runtimes."]
+
+    Note -.-> Adapter
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef manifest fill:#FFF8E1,stroke:#F9A825,color:#000;
+    classDef control fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef agent fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef provider fill:#F3E5F5,stroke:#8E24AA,color:#000;
+    classDef runtime fill:#ECEFF1,stroke:#455A64,color:#000;
+    classDef feedback fill:#E0F7FA,stroke:#00838F,color:#000;
+    classDef note fill:#FFFDE7,stroke:#FBC02D,color:#000,stroke-dasharray: 5 5;
+
+    class Manifest manifest
+
+    class Deploy,Policy,Workflow control
+
+    class RuntimeMgr,Selector,Adapter agent
+
+    class Docker,Containerd,Kubernetes,VM,Wasm provider
+
+    class Containers,Pods,VirtualMachines,WasmModules runtime
+
+    class Status,Requirements,Policies,Capabilities feedback
+
+    class Note note

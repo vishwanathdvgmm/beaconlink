@@ -1,0 +1,207 @@
+---
+title: BeaconLink Relay Network State Machine
+---
+
+stateDiagram-v2
+    direction LR
+
+    %% =====================================================
+    %% Relay Startup
+    %% =====================================================
+
+    [*] --> Starting
+
+    Starting : Initialize Relay Service
+    Starting : Load Configuration
+    Starting : Initialize Networking
+    Starting : Load Trust Store
+
+    Starting --> Initializing
+
+    Initializing : Initialize Connection Pools
+    Initializing : Initialize Routing Engine
+    Initializing : Initialize Session Manager
+    Initializing : Initialize Metrics
+
+    Initializing --> Ready
+
+    %% =====================================================
+    %% Operational States
+    %% =====================================================
+
+    state Ready {
+
+        [*] --> Listening
+
+        Listening : Await Agent Connections
+        Listening : Await Control Plane Requests
+
+        Listening --> Authenticating : Incoming Connection
+        Listening --> Forwarding : Existing Session
+        Listening --> Maintenance : Maintenance Mode
+
+        %% -------------------------------------------------
+        %% Authentication
+        %% -------------------------------------------------
+
+        Authenticating : Mutual TLS Handshake
+        Authenticating : Certificate Validation
+        Authenticating : Identity Verification
+
+        Authenticating --> SessionEstablished : Authentication Successful
+        Authenticating --> ConnectionRejected : Authentication Failed
+
+        ConnectionRejected : Reject Connection
+        ConnectionRejected : Log Security Event
+
+        ConnectionRejected --> Listening
+
+        %% -------------------------------------------------
+        %% Session Lifecycle
+        %% -------------------------------------------------
+
+        SessionEstablished : Create Secure Session
+        SessionEstablished : Allocate Resources
+        SessionEstablished : Register Session
+
+        SessionEstablished --> Forwarding
+
+        %% -------------------------------------------------
+        %% Traffic Forwarding
+        %% -------------------------------------------------
+
+        Forwarding : Forward Control Messages
+        Forwarding : Forward Heartbeats
+        Forwarding : Forward Deployment Traffic
+        Forwarding : Forward Event Streams
+
+        Forwarding --> Routing : Message Received
+        Forwarding --> Monitoring : Periodic Health Check
+        Forwarding --> SessionExpired : Session Timeout
+
+        Routing : Resolve Destination
+        Routing : Apply Routing Policy
+        Routing : Select Relay Path
+
+        Routing --> Forwarding : Route Established
+        Routing --> RetryRouting : Route Unavailable
+
+        RetryRouting : Retry Alternative Route
+
+        RetryRouting --> Routing
+        RetryRouting --> Degraded : Retry Limit Exceeded
+
+        %% -------------------------------------------------
+        %% Monitoring
+        %% -------------------------------------------------
+
+        Monitoring : Verify Session Health
+        Monitoring : Verify Relay Health
+        Monitoring : Update Metrics
+
+        Monitoring --> Forwarding : Healthy
+        Monitoring --> Degraded : Health Warning
+
+        %% -------------------------------------------------
+        %% Maintenance
+        %% -------------------------------------------------
+
+        Maintenance : Reject New Sessions
+        Maintenance : Drain Existing Sessions
+
+        Maintenance --> Listening : Maintenance Complete
+
+        %% -------------------------------------------------
+        %% Degraded
+        %% -------------------------------------------------
+
+        Degraded : Limited Routing Capacity
+        Degraded : Increased Latency
+        Degraded : Partial Availability
+
+        Degraded --> Forwarding : Capacity Restored
+        Degraded --> Failed : Critical Failure
+
+        %% -------------------------------------------------
+        %% Session Cleanup
+        %% -------------------------------------------------
+
+        SessionExpired : Remove Session
+        SessionExpired : Release Resources
+
+        SessionExpired --> Listening
+
+    }
+
+    %% =====================================================
+    %% Federation States
+    %% =====================================================
+
+    state Federation {
+
+        [*] --> DiscoverPeers
+
+        DiscoverPeers : Discover Relay Peers
+
+        DiscoverPeers --> Synchronizing
+
+        Synchronizing : Exchange Routing Tables
+        Synchronizing : Exchange Health Information
+        Synchronizing : Synchronize Topology
+
+        Synchronizing --> Federated
+
+        Federated : Global Relay Federation Active
+
+        Federated --> Synchronizing : Topology Changed
+        Federated --> PeerLost : Peer Failure
+
+        PeerLost : Remove Failed Peer
+
+        PeerLost --> Synchronizing
+
+    }
+
+    Ready --> Federation : Federation Enabled
+    Federation --> Ready : Federation Disabled
+
+    %% =====================================================
+    %% Failure Recovery
+    %% =====================================================
+
+    Failed : Relay Unavailable
+    Failed : Await Recovery
+
+    Failed --> Restarting : Automatic Recovery
+
+    Restarting : Restart Relay Components
+    Restarting : Restore Routing State
+
+    Restarting --> Starting
+
+    %% =====================================================
+    %% Shutdown
+    %% =====================================================
+
+    Ready --> ShuttingDown : Shutdown Requested
+    Federation --> ShuttingDown : Shutdown Requested
+
+    ShuttingDown : Stop Accepting Connections
+    ShuttingDown : Drain Active Sessions
+    ShuttingDown : Flush Metrics
+    ShuttingDown : Close Connections
+
+    ShuttingDown --> Terminated
+
+    Terminated : Relay Offline
+
+    Terminated --> [*]
+
+    %% =====================================================
+    %% Global Failure Paths
+    %% =====================================================
+
+    Authenticating --> Failed : Internal Error
+    Routing --> Failed : Routing Engine Failure
+    Monitoring --> Failed : Health Monitor Failure
+    Initializing --> Failed : Startup Failure

@@ -1,0 +1,142 @@
+---
+title: BeaconLink Control Plane Architecture
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Entry Layer
+    %% =====================================================
+
+    Console["BeaconLink Console"]
+    REST["REST API"]
+    WS["WebSocket API"]
+
+    Console --> Gateway
+    REST --> Gateway
+    WS --> Gateway
+
+    %% =====================================================
+    %% API Layer
+    %% =====================================================
+
+    subgraph API["API Layer"]
+
+        Gateway["API Gateway"]
+
+    end
+
+    %% =====================================================
+    %% Core Services
+    %% =====================================================
+
+    subgraph Services["Core Control Plane Services"]
+
+        Deploy["Deployment Engine"]
+        Workflow["Workflow Engine"]
+        Policy["Policy Engine"]
+        Scheduler["Distributed Scheduler"]
+        Plugin["Plugin Manager"]
+        Secret["Secret Management"]
+
+    end
+
+    %% =====================================================
+    %% Platform Services
+    %% =====================================================
+
+    subgraph Platform["Platform Services"]
+
+        EventBus["Event Streaming Platform"]
+
+        Metadata["Metadata Store"]
+        Audit["Audit Log"]
+        Config["Configuration Store"]
+
+    end
+
+    %% =====================================================
+    %% External Infrastructure
+    %% =====================================================
+
+    subgraph Relay["Relay Layer"]
+
+        RelayCluster["Relay Cluster"]
+
+    end
+
+    %% =====================================================
+    %% Gateway Routing
+    %% =====================================================
+
+    Gateway --> Deploy
+    Gateway --> Workflow
+    Gateway --> Policy
+    Gateway --> Scheduler
+    Gateway --> Plugin
+    Gateway --> Secret
+
+    %% =====================================================
+    %% Service Dependencies
+    %% =====================================================
+
+    Deploy --> Policy
+    Deploy --> Workflow
+    Deploy --> Secret
+    Deploy --> Plugin
+
+    Workflow --> Policy
+    Workflow --> Scheduler
+
+    Scheduler --> Workflow
+
+    %% =====================================================
+    %% Event-Driven Communication
+    %% =====================================================
+
+    Deploy --> EventBus
+    Workflow --> EventBus
+    Policy --> EventBus
+    Scheduler --> EventBus
+    Plugin --> EventBus
+    Secret --> EventBus
+
+    %% =====================================================
+    %% Persistence
+    %% =====================================================
+
+    Deploy --> Metadata
+    Workflow --> Metadata
+    Policy --> Metadata
+    Scheduler --> Metadata
+    Plugin --> Metadata
+    Secret --> Metadata
+
+    EventBus --> Audit
+
+    Config --> Deploy
+    Config --> Workflow
+    Config --> Policy
+    Config --> Scheduler
+
+    %% =====================================================
+    %% Relay Integration
+    %% =====================================================
+
+    EventBus --> RelayCluster
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef ui fill:#FFF8E1,stroke:#F9A825,color:#000;
+    classDef api fill:#E3F2FD,stroke:#1565C0,color:#000;
+    classDef service fill:#E8F5E9,stroke:#2E7D32,color:#000;
+    classDef platform fill:#EDE7F6,stroke:#5E35B1,color:#000;
+    classDef relay fill:#F3E5F5,stroke:#8E24AA,color:#000;
+
+    class Console,REST,WS ui
+    class Gateway api
+    class Deploy,Workflow,Policy,Scheduler,Plugin,Secret service
+    class EventBus,Metadata,Audit,Config platform
+    class RelayCluster relay

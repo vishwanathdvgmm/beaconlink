@@ -1,0 +1,179 @@
+---
+title: BeaconLink Event Data Model
+---
+
+classDiagram
+    direction TB
+
+    %% =====================================================
+    %% Event
+    %% =====================================================
+
+    class Event {
+        +UUID id
+        +String type
+        +EventCategory category
+        +EventSeverity severity
+        +EventStatus status
+        +DateTime timestamp
+        +String correlationId
+        +String traceId
+    }
+
+    class EventPayload {
+        +UUID id
+        +JSON data
+        +String schemaVersion
+        +Checksum checksum
+    }
+
+    class EventMetadata {
+        +UUID id
+        +String source
+        +String version
+        +String tenantId
+        +String siteId
+    }
+
+    %% =====================================================
+    %% Producers
+    %% =====================================================
+
+    class Agent {
+        +UUID id
+        +String hostname
+    }
+
+    class Relay {
+        +UUID id
+        +String name
+    }
+
+    class DeploymentEngine {
+        +UUID id
+    }
+
+    class WorkflowEngine {
+        +UUID id
+    }
+
+    class PolicyEngine {
+        +UUID id
+    }
+
+    class Scheduler {
+        +UUID id
+    }
+
+    %% =====================================================
+    %% Event Platform
+    %% =====================================================
+
+    class Topic {
+        +UUID id
+        +String name
+        +Integer partitions
+        +Retention retention
+    }
+
+    class Subscription {
+        +UUID id
+        +ConsumerGroup group
+        +DeliveryMode mode
+    }
+
+    %% =====================================================
+    %% Consumers
+    %% =====================================================
+
+    class Observability {
+        +UUID id
+    }
+
+    class AuditService {
+        +UUID id
+    }
+
+    class NotificationService {
+        +UUID id
+    }
+
+    class Dashboard {
+        +UUID id
+    }
+
+    class Workflow {
+        +UUID id
+    }
+
+    %% =====================================================
+    %% Lifecycle
+    %% =====================================================
+
+    class DeadLetterQueue {
+        +UUID id
+        +RetryPolicy retryPolicy
+    }
+
+    class EventArchive {
+        +UUID id
+        +RetentionPolicy retentionPolicy
+    }
+
+    %% =====================================================
+    %% Relationships
+    %% =====================================================
+
+    Event "1" --> "1" EventPayload : contains
+
+    Event "1" --> "1" EventMetadata : annotated by
+
+    Agent --> "*" Event : publishes
+
+    Relay --> "*" Event : publishes
+
+    DeploymentEngine --> "*" Event : publishes
+
+    WorkflowEngine --> "*" Event : publishes
+
+    PolicyEngine --> "*" Event : publishes
+
+    Scheduler --> "*" Event : publishes
+
+    Event --> Topic : written to
+
+    Topic --> "*" Subscription : delivers to
+
+    Subscription --> Observability : consumed by
+
+    Subscription --> AuditService : consumed by
+
+    Subscription --> NotificationService : consumed by
+
+    Subscription --> Dashboard : consumed by
+
+    Subscription --> Workflow : consumed by
+
+    Event --> DeadLetterQueue : failed delivery
+
+    Event --> EventArchive : retained in
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef event fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef producer fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef platform fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef consumer fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef lifecycle fill:#FCE4EC,stroke:#C2185B,color:#000
+
+    class Event,EventPayload,EventMetadata event
+
+    class Agent,Relay,DeploymentEngine,WorkflowEngine,PolicyEngine,Scheduler producer
+
+    class Topic,Subscription platform
+
+    class Observability,AuditService,NotificationService,Dashboard,Workflow consumer
+
+    class DeadLetterQueue,EventArchive lifecycle

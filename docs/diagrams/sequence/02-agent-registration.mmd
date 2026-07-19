@@ -1,0 +1,141 @@
+---
+title: BeaconLink Agent Registration Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Agent as BeaconLink Agent
+    participant Relay as Relay Network
+    participant Gateway as API Gateway
+    participant Auth as Identity Provider
+    participant PKI as Certificate Authority
+    participant Policy as Policy Engine
+    participant Control as BeaconLink Control Plane
+    participant Inventory as Inventory Service
+    participant Scheduler as Distributed Scheduler
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Agent Initialization
+    %% =====================================================
+
+    Note over Agent: Agent starts with issued identity<br/>certificate and bootstrap configuration
+
+    Agent->>Agent: Load configuration
+    Agent->>Agent: Load X.509 certificate
+    Agent->>Agent: Initialize secure storage
+
+    %% =====================================================
+    %% Secure Network Connection
+    %% =====================================================
+
+    Agent->>Relay: Establish outbound mTLS connection
+    Relay->>PKI: Validate certificate chain
+    PKI-->>Relay: Certificate valid
+
+    Relay-->>Agent: Secure session established
+
+    %% =====================================================
+    %% Registration Request
+    %% =====================================================
+
+    Agent->>Gateway: Registration request
+    Note right of Agent: Includes:\n• Agent ID\n• Site ID\n• Certificate\n• Runtime Version\n• Capabilities
+
+    Gateway->>Auth: Authenticate machine identity
+    Auth->>PKI: Validate certificate
+    PKI-->>Auth: Identity trusted
+    Auth-->>Gateway: Authentication successful
+
+    %% =====================================================
+    %% Authorization
+    %% =====================================================
+
+    Gateway->>Policy: Evaluate registration policy
+
+    Note right of Policy: Validate:\n• Site authorization\n• Agent identity\n• Organization policy\n• Certificate trust\n• Registration limits
+
+    Policy-->>Gateway: Registration permitted
+
+    %% =====================================================
+    %% Control Plane Registration
+    %% =====================================================
+
+    Gateway->>Control: Forward authenticated registration
+
+    Control->>Inventory: Register managed site
+    Control->>Inventory: Register agent
+    Control->>Inventory: Store runtime capabilities
+
+    Inventory-->>Control: Registration persisted
+
+    %% =====================================================
+    %% Scheduler Integration
+    %% =====================================================
+
+    Control->>Scheduler: Notify available execution node
+    Scheduler-->>Control: Scheduler updated
+
+    %% =====================================================
+    %% Initial Synchronization
+    %% =====================================================
+
+    Control->>Agent: Registration successful
+
+    Control->>Agent: Desired State
+    Control->>Agent: Policy Bundle
+    Control->>Agent: Relay Configuration
+    Control->>Agent: Reconciliation Configuration
+
+    Agent->>Agent: Persist configuration
+    Agent->>Agent: Start reconciliation loop
+
+    %% =====================================================
+    %% Event Publication
+    %% =====================================================
+
+    Control->>Events: Publish AgentRegistered
+    Control->>Audit: Record registration
+
+    Events-->>Scheduler: Registration notification
+    Events-->>Inventory: Inventory update
+    Events-->>Policy: Registration event
+
+    %% =====================================================
+    %% Continuous Operation
+    %% =====================================================
+
+    loop Continuous Registration Validation
+
+        Agent->>Relay: Heartbeat
+
+        Relay->>Control: Forward heartbeat
+
+        Control->>Policy: Validate active identity
+        Policy-->>Control: Authorized
+
+        Control-->>Agent: Desired state updates (if changed)
+
+    end
+
+    %% =====================================================
+    %% Registration Failure Path
+    %% =====================================================
+
+    alt Authentication or Policy Failure
+
+        Gateway-->>Agent: Registration rejected
+
+        Gateway->>Audit: Record failed registration
+
+        Gateway->>Events: Publish AgentRegistrationFailed
+
+        Agent->>Agent: Backoff and retry
+
+    else Registration Successful
+
+        Note over Agent,Control: Agent becomes an active,<br/>trusted execution node capable of<br/>receiving deployments and workflow tasks.
+
+    end

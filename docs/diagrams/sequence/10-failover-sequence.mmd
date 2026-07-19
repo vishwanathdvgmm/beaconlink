@@ -1,0 +1,218 @@
+---
+title: BeaconLink Failover Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant Runtime as Runtime Platform
+    participant Agent as BeaconLink Agent
+    participant Relay as Relay Network
+    participant Control as BeaconLink Control Plane
+    participant Inventory as Inventory Service
+    participant Policy as Policy Engine
+    participant Scheduler as Distributed Scheduler
+    participant Planner as Deployment Planner
+    participant Workflow as Workflow Engine
+    participant Target as Standby BeaconLink Agent
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Normal Operation
+    %% =====================================================
+
+    Note over Agent,Control: Workload is healthy and continuously reconciled
+
+    loop Regular Heartbeats
+
+        Agent->>Relay: Heartbeat
+        Relay->>Control: Forward heartbeat
+
+        Control->>Inventory: Update health
+        Inventory-->>Control: Health recorded
+
+    end
+
+    %% =====================================================
+    %% Failure Detection
+    %% =====================================================
+
+    Runtime-->>Agent: Runtime failure detected
+
+    Agent->>Relay: Failure notification
+
+    Relay->>Control: Forward failure event
+
+    Control->>Events: Publish RuntimeFailureDetected
+
+    Control->>Audit: Record runtime failure
+
+    %% =====================================================
+    %% Health Verification
+    %% =====================================================
+
+    Control->>Inventory: Retrieve latest health
+
+    Inventory-->>Control: Current agent status
+
+    Control->>Policy: Verify failover policy
+
+    Policy-->>Control: Failover permitted
+
+    %% =====================================================
+    %% Failure Classification
+    %% =====================================================
+
+    alt Recoverable Failure
+
+        Control->>Workflow: Restart workload
+
+        Workflow->>Agent: Execute restart
+
+        Agent->>Runtime: Restart workload
+
+        Runtime-->>Agent: Restart successful
+
+        Agent->>Control: Recovery completed
+
+        Control->>Events: Publish WorkloadRecovered
+
+    else Node Failure
+
+        Control->>Scheduler: Remove failed capacity
+
+        Scheduler->>Inventory: Refresh cluster capacity
+
+        Inventory-->>Scheduler: Updated inventory
+
+        Scheduler-->>Control: Failed node isolated
+
+    end
+
+    %% =====================================================
+    %% Failover Planning
+    %% =====================================================
+
+    Control->>Planner: Generate failover plan
+
+    Planner->>Inventory: Discover healthy standby agents
+
+    Inventory-->>Planner: Candidate execution nodes
+
+    Planner->>Planner: Evaluate capabilities
+    Planner->>Planner: Select optimal target
+
+    Planner-->>Control: Failover execution plan
+
+    %% =====================================================
+    %% Target Selection
+    %% =====================================================
+
+    Control->>Scheduler: Reserve standby capacity
+
+    Scheduler-->>Control: Capacity reserved
+
+    Control->>Workflow: Create failover workflow
+
+    %% =====================================================
+    %% Workload Migration
+    %% =====================================================
+
+    Workflow->>Target: Dispatch deployment
+
+    Target->>Target: Validate desired state
+
+    Target->>Target: Retrieve immutable revision
+
+    Target->>Target: Prepare runtime
+
+    Target->>Runtime: Deploy workload
+
+    loop Deployment Progress
+
+        Runtime-->>Target: Progress update
+
+        Target->>Workflow: Status update
+
+        Workflow->>Events: Publish FailoverProgress
+
+    end
+
+    %% =====================================================
+    %% Validation
+    %% =====================================================
+
+    Runtime-->>Target: Deployment successful
+
+    Target->>Runtime: Execute health checks
+
+    Runtime-->>Target: Workload healthy
+
+    Target->>Inventory: Update workload ownership
+
+    Inventory-->>Target: Inventory synchronized
+
+    %% =====================================================
+    %% Traffic Recovery
+    %% =====================================================
+
+    Workflow->>Control: Failover complete
+
+    Control->>Events: Publish FailoverCompleted
+
+    Control->>Audit: Record successful failover
+
+    Note over Control,Target: Traffic is directed to the<br/>new execution node through the<br/>Relay Network and runtime routing.
+
+    %% =====================================================
+    %% Failed Node Recovery
+    %% =====================================================
+
+    opt Original Node Returns
+
+        Agent->>Relay: Reconnect
+
+        Relay->>Control: Agent online
+
+        Control->>Policy: Validate identity
+
+        Policy-->>Control: Authorized
+
+        Control->>Inventory: Mark node healthy
+
+        Inventory-->>Control: Capacity restored
+
+        Scheduler->>Inventory: Re-enable scheduling
+
+        Control->>Events: Publish AgentRecovered
+
+    end
+
+    %% =====================================================
+    %% Continuous Reconciliation
+    %% =====================================================
+
+    loop Ongoing Reconciliation
+
+        Target->>Control: Heartbeat
+
+        Control->>Inventory: Verify desired state
+
+        Control->>Policy: Continuous authorization
+
+        alt Drift Detected
+
+            Control->>Workflow: Trigger reconciliation
+
+            Workflow->>Events: Publish DriftDetected
+
+        else State Healthy
+
+            Control->>Events: Publish WorkloadHealthy
+
+        end
+
+    end
+
+    Note over Workflow,Target: BeaconLink automatically restores service by<br/>combining failure detection, policy validation,<br/>capability-based scheduling, immutable deployments,<br/>and Continuous Reconciliation.

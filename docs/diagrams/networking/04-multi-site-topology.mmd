@@ -1,0 +1,242 @@
+---
+title: BeaconLink Multi-Site Topology
+---
+
+flowchart TB
+
+    %% =====================================================
+    %% Global Control Plane
+    %% =====================================================
+
+    subgraph Control["Global BeaconLink Control Plane"]
+
+        API["API Gateway"]
+        Planner["Deployment Planner"]
+        Scheduler["Distributed Scheduler"]
+        Policy["Policy Engine"]
+        Inventory["Global Inventory"]
+
+    end
+
+    %% =====================================================
+    %% Global Relay Network
+    %% =====================================================
+
+    subgraph Relay["Global Relay Network"]
+
+        Router["Relay Router"]
+
+        RelayUS["US Relay"]
+        RelayEU["EU Relay"]
+        RelayAP["APAC Relay"]
+
+        Router --> RelayUS
+        Router --> RelayEU
+        Router --> RelayAP
+
+        RelayUS <-. Federation .-> RelayEU
+        RelayEU <-. Federation .-> RelayAP
+        RelayAP <-. Federation .-> RelayUS
+
+    end
+
+    API --> Planner
+    Planner --> Scheduler
+    Scheduler --> Router
+
+    %% =====================================================
+    %% Regional Sites
+    %% =====================================================
+
+    subgraph RegionA["Region A"]
+
+        subgraph SiteA1["Production Site"]
+
+            AgentA1["BeaconLink Agent"]
+            RuntimeA1["Kubernetes"]
+
+        end
+
+        subgraph SiteA2["Edge Site"]
+
+            AgentA2["BeaconLink Agent"]
+            RuntimeA2["Docker"]
+
+        end
+
+    end
+
+    subgraph RegionB["Region B"]
+
+        subgraph SiteB1["Production Site"]
+
+            AgentB1["BeaconLink Agent"]
+            RuntimeB1["VMware"]
+
+        end
+
+        subgraph SiteB2["Factory Site"]
+
+            AgentB2["BeaconLink Agent"]
+            RuntimeB2["Nomad"]
+
+        end
+
+    end
+
+    subgraph RegionC["Region C"]
+
+        subgraph SiteC1["Cloud Region"]
+
+            AgentC1["BeaconLink Agent"]
+            RuntimeC1["Kubernetes"]
+
+        end
+
+        subgraph SiteC2["Remote Edge"]
+
+            AgentC2["BeaconLink Agent"]
+            RuntimeC2["Bare Metal"]
+
+        end
+
+    end
+
+    RelayUS --> AgentA1
+    RelayUS --> AgentA2
+
+    RelayEU --> AgentB1
+    RelayEU --> AgentB2
+
+    RelayAP --> AgentC1
+    RelayAP --> AgentC2
+
+    AgentA1 --> RuntimeA1
+    AgentA2 --> RuntimeA2
+
+    AgentB1 --> RuntimeB1
+    AgentB2 --> RuntimeB2
+
+    AgentC1 --> RuntimeC1
+    AgentC2 --> RuntimeC2
+
+    %% =====================================================
+    %% Global Services
+    %% =====================================================
+
+    subgraph Services["Global Platform Services"]
+
+        Events["Event Streaming Platform"]
+        Audit["Audit Service"]
+        Secrets["Secret Management"]
+        Observability["Observability"]
+
+    end
+
+    Scheduler --> Events
+
+    AgentA1 --> Events
+    AgentA2 --> Events
+    AgentB1 --> Events
+    AgentB2 --> Events
+    AgentC1 --> Events
+    AgentC2 --> Events
+
+    Events --> Audit
+    Events --> Observability
+
+    Secrets --> AgentA1
+    Secrets --> AgentB1
+    Secrets --> AgentC1
+
+    %% =====================================================
+    %% Cross-Site Deployments
+    %% =====================================================
+
+    subgraph Rollout["Multi-Site Rollout"]
+
+        Wave1["Wave 1
+
+Canary Sites"]
+
+        Wave2["Wave 2
+
+Regional Production"]
+
+        Wave3["Wave 3
+
+Global Rollout"]
+
+    end
+
+    Planner --> Wave1
+    Wave1 --> Wave2
+    Wave2 --> Wave3
+
+    Wave1 -.-> SiteA2
+    Wave2 -.-> SiteA1
+    Wave2 -.-> SiteB1
+    Wave3 -.-> SiteC1
+    Wave3 -.-> SiteB2
+    Wave3 -.-> SiteC2
+
+    %% =====================================================
+    %% Site Characteristics
+    %% =====================================================
+
+    Characteristics["Site Characteristics
+
+• Independent Failure Domains
+• Local Agent Execution
+• Runtime Independence
+• Relay-Based Connectivity
+• Continuous Reconciliation
+• Policy Enforcement
+• Capability Discovery
+• Secure Outbound Networking"]
+
+    Characteristics -.-> RegionA
+    Characteristics -.-> RegionB
+    Characteristics -.-> RegionC
+
+    %% =====================================================
+    %% Topology Principles
+    %% =====================================================
+
+    Principles["Topology Principles
+
+• Single Global Control Plane
+• Distributed Relay Network
+• Multi-Region Operation
+• Multi-Runtime Support
+• Site Isolation
+• Progressive Rollouts
+• High Availability
+• Zero Trust Networking"]
+
+    Principles -.-> Control
+    Principles -.-> Relay
+    Principles -.-> Rollout
+
+    %% =====================================================
+    %% Styling
+    %% =====================================================
+
+    classDef control fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef relay fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef site fill:#FFF3E0,stroke:#EF6C00,color:#000
+    classDef runtime fill:#F3E5F5,stroke:#8E24AA,color:#000
+    classDef service fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#000,stroke-dasharray:5 5
+
+    class API,Planner,Scheduler,Policy,Inventory control
+
+    class Router,RelayUS,RelayEU,RelayAP relay
+
+    class AgentA1,AgentA2,AgentB1,AgentB2,AgentC1,AgentC2 site
+
+    class RuntimeA1,RuntimeA2,RuntimeB1,RuntimeB2,RuntimeC1,RuntimeC2 runtime
+
+    class Events,Audit,Secrets,Observability,Wave1,Wave2,Wave3 service
+
+    class Characteristics,Principles note

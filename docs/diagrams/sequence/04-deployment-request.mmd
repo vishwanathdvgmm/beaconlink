@@ -1,0 +1,147 @@
+---
+title: BeaconLink Deployment Request Sequence
+---
+
+sequenceDiagram
+    autonumber
+
+    participant User as Platform Operator
+    participant API as API Gateway
+    participant Auth as Identity Provider
+    participant Policy as Policy Engine
+    participant Workflow as Workflow Engine
+    participant Planner as Deployment Planner
+    participant Scheduler as Distributed Scheduler
+    participant Inventory as Inventory Service
+    participant Relay as Relay Network
+    participant Agent as BeaconLink Agent
+    participant Runtime as Runtime Manager
+    participant Adapter as Runtime Adapter
+    participant Events as Event Streaming Platform
+    participant Audit as Audit Service
+
+    %% =====================================================
+    %% Deployment Submission
+    %% =====================================================
+
+    User->>API: Submit deployment manifest
+
+    API->>Auth: Authenticate request
+    Auth-->>API: Identity verified
+
+    API->>Policy: Authorize deployment
+    Policy-->>API: Deployment permitted
+
+    API->>Audit: Record deployment request
+
+    %% =====================================================
+    %% Workflow Creation
+    %% =====================================================
+
+    API->>Workflow: Create deployment workflow
+
+    Workflow->>Planner: Build deployment plan
+
+    Planner->>Inventory: Retrieve infrastructure inventory
+    Inventory-->>Planner: Sites, agents, capabilities
+
+    Planner->>Planner: Validate manifest
+    Planner->>Planner: Resolve dependencies
+    Planner->>Planner: Compute immutable revision
+
+    Planner-->>Workflow: Execution plan
+
+    %% =====================================================
+    %% Scheduling
+    %% =====================================================
+
+    Workflow->>Scheduler: Request execution targets
+
+    Scheduler->>Inventory: Query healthy agents
+    Inventory-->>Scheduler: Available execution nodes
+
+    Scheduler->>Policy: Evaluate placement policies
+    Policy-->>Scheduler: Placement approved
+
+    Scheduler-->>Workflow: Selected target agents
+
+    %% =====================================================
+    %% Deployment Dispatch
+    %% =====================================================
+
+    Workflow->>Relay: Dispatch deployment task
+
+    Relay->>Agent: Deliver deployment
+
+    Agent->>Agent: Validate desired state
+    Agent->>Runtime: Prepare deployment
+
+    Runtime->>Adapter: Translate deployment
+    Adapter-->>Runtime: Runtime-specific plan
+
+    %% =====================================================
+    %% Runtime Execution
+    %% =====================================================
+
+    Runtime->>Adapter: Execute deployment
+
+    loop Deployment Progress
+
+        Adapter-->>Runtime: Progress update
+
+        Runtime-->>Agent: Runtime status
+
+        Agent->>Relay: Progress report
+
+        Relay->>Workflow: Forward progress
+
+        Workflow->>Events: Publish DeploymentProgress
+
+    end
+
+    %% =====================================================
+    %% Deployment Completion
+    %% =====================================================
+
+    Adapter-->>Runtime: Deployment complete
+
+    Runtime-->>Agent: Execution successful
+
+    Agent->>Inventory: Update workload inventory
+
+    Inventory-->>Workflow: Inventory synchronized
+
+    Workflow->>Events: Publish DeploymentCompleted
+    Workflow->>Audit: Record successful deployment
+
+    Workflow-->>API: Deployment complete
+
+    API-->>User: Deployment successful
+
+    %% =====================================================
+    %% Failure Handling
+    %% =====================================================
+
+    alt Deployment Failure
+
+        Adapter-->>Runtime: Execution failed
+
+        Runtime-->>Agent: Failure details
+
+        Agent->>Workflow: Failure report
+
+        Workflow->>Events: Publish DeploymentFailed
+
+        Workflow->>Audit: Record deployment failure
+
+        Workflow->>Planner: Request rollback
+
+        Planner-->>Workflow: Rollback plan
+
+        Workflow->>Relay: Dispatch rollback
+
+    else Deployment Successful
+
+        Note over User,Agent: Desired state converged.<br/>Continuous reconciliation<br/>maintains deployment health.
+
+    end
