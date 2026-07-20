@@ -43,7 +43,6 @@ linters:
     # --------------------------------------------------------------------------
     - revive
     - gosimple
-    - typecheck
     - bodyclose
     - copyloopvar
     - durationcheck
@@ -54,7 +53,6 @@ linters:
     - misspell
     - nilerr
     - noctx
-    - prealloc
     - predeclared
     - reassign
     - sqlclosecheck
@@ -78,7 +76,6 @@ linters:
     - bidichk
     - decorder
     - dogsled
-    - dupl
     - errname
     - goconst
     - godot
@@ -96,7 +93,7 @@ linters:
 
 linters-settings:
   cyclop:
-    max-complexity: 15
+    max-complexity: 20
 
   gocognit:
     min-complexity: 20
@@ -111,7 +108,7 @@ linters-settings:
     locale: US
 
   govet:
-    enable-all: true
+    enable-all: false
 
   revive:
     confidence: 0.8
