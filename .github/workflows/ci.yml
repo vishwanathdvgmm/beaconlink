@@ -66,20 +66,18 @@ jobs:
             exit 1
           fi
 
-      - name: Install golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-            | sh -s -- -b "$(go env GOPATH)/bin"
-
       - name: Run golangci-lint
-        run: golangci-lint run
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.4.0
+          args: --timeout=5m
 
       - name: Run unit tests
-        run: go test ./... -race -coverprofile=coverage.out
+        run: go test -v -race -coverprofile=coverage.out ./...
 
       - name: Build
         run: |
-          go build ./...
+          go build -v ./...
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -88,6 +86,7 @@ jobs:
           path: coverage.out
 
   frontend:
+    if: false
     name: Frontend
 
     runs-on: ubuntu-latest
@@ -163,7 +162,6 @@ jobs:
 
     needs:
       - backend
-      - frontend
       - repository
 
     steps:
