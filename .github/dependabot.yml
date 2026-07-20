@@ -1,0 +1,166 @@
+# ==============================================================================
+# BeaconLink
+# .github/dependabot.yml
+#
+# Documentation:
+# https://docs.github.com/code-security/dependabot
+# ==============================================================================
+
+version: 2
+
+updates:
+  # ============================================================================
+  # Go Modules
+  # ============================================================================
+
+  - package-ecosystem: "gomod"
+
+    directory: "/"
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:00"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 10
+
+    labels:
+      - dependencies
+
+    commit-message:
+      prefix: deps
+      include: scope
+
+    reviewers: []
+
+    assignees: []
+
+    rebase-strategy: auto
+
+    versioning-strategy: increase
+
+    groups:
+      go-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+      go-major:
+        update-types:
+          - major
+
+  # ============================================================================
+  # GitHub Actions
+  # ============================================================================
+
+  - package-ecosystem: "github-actions"
+
+    directory: "/"
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:30"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 5
+
+    labels:
+      - dependencies
+      - github-actions
+
+    commit-message:
+      prefix: ci
+      include: scope
+
+    reviewers: []
+
+    assignees: []
+
+    rebase-strategy: auto
+
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # ============================================================================
+  # npm (Frontend)
+  # ============================================================================
+
+  - package-ecosystem: "npm"
+
+    directory: "/web"
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 10
+
+    labels:
+      - dependencies
+      - frontend
+
+    commit-message:
+      prefix: deps
+      include: scope
+
+    reviewers: []
+
+    assignees: []
+
+    rebase-strategy: auto
+
+    versioning-strategy: increase
+
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+
+      typescript:
+        patterns:
+          - "typescript"
+          - "@typescript-eslint/*"
+
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+
+      eslint:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "eslint-*"
+
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+      npm-major:
+        update-types:
+          - major

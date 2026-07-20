@@ -1,0 +1,166 @@
+name: Nightly Integration
+
+on:
+  schedule:
+    # Every day at 01:00 UTC
+    - cron: "0 1 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.25"
+  NODE_VERSION: "22"
+
+jobs:
+  integration:
+    name: Nightly Integration Tests
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:17
+
+        env:
+          POSTGRES_DB: beaconlink
+          POSTGRES_USER: beaconlink
+          POSTGRES_PASSWORD: beaconlink
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U beaconlink"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:8
+
+        ports:
+          - 6379:6379
+
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------------------------
+      # Go
+      # ----------------------------------------------------------------------
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Verify Go modules
+        run: go mod verify
+
+      # ----------------------------------------------------------------------
+      # Node
+      # ----------------------------------------------------------------------
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        if: hashFiles('web/package.json') != ''
+        working-directory: web
+        run: npm ci
+
+      # ----------------------------------------------------------------------
+      # Build
+      # ----------------------------------------------------------------------
+
+      - name: Build backend
+        run: go build ./...
+
+      - name: Build frontend
+        if: hashFiles('web/package.json') != ''
+        working-directory: web
+        run: npm run build
+
+      # ----------------------------------------------------------------------
+      # Unit Tests
+      # ----------------------------------------------------------------------
+
+      - name: Run Go tests
+        run: |
+          go test \
+            -race \
+            -count=1 \
+            ./...
+
+      - name: Run frontend tests
+        if: hashFiles('web/package.json') != ''
+        working-directory: web
+        run: npm test
+
+      # ----------------------------------------------------------------------
+      # Integration Tests
+      # ----------------------------------------------------------------------
+
+      - name: Run integration tests
+        run: |
+          if [ -d "./test/integration" ]; then
+            go test \
+              -v \
+              -count=1 \
+              ./test/integration/...
+          else
+            echo "No integration tests found."
+          fi
+
+      # ----------------------------------------------------------------------
+      # End-to-End Tests
+      # ----------------------------------------------------------------------
+
+      - name: Run end-to-end tests
+        run: |
+          if [ -d "./test/e2e" ]; then
+            go test \
+              -v \
+              -count=1 \
+              ./test/e2e/...
+          else
+            echo "No end-to-end tests found."
+          fi
+
+      # ----------------------------------------------------------------------
+      # Upload Logs
+      # ----------------------------------------------------------------------
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-artifacts
+          retention-days: 14
+          path: |
+            coverage.out
+            logs/
+            test-results/

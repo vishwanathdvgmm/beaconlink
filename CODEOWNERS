@@ -1,0 +1,103 @@
+# ============================================================================
+# BeaconLink CODEOWNERS
+#
+# This file defines the default code owners for repository paths.
+#
+# GitHub automatically requests reviews from the listed owners when files
+# matching a pattern are modified.
+#
+# Replace <github-username> with the appropriate GitHub username or team.
+#
+# Documentation:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Default Owner
+# ----------------------------------------------------------------------------
+
+* @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# GitHub Configuration
+# ----------------------------------------------------------------------------
+
+.github/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Documentation
+# ----------------------------------------------------------------------------
+
+docs/ @vishwanathdvgmm
+
+docs/ADR/ @vishwanathdvgmm
+
+docs/RFC/ @vishwanathdvgmm
+
+docs/diagrams/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Backend
+# ----------------------------------------------------------------------------
+
+cmd/ @vishwanathdvgmm
+
+internal/ @vishwanathdvgmm
+
+pkg/ @vishwanathdvgmm
+
+api/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Frontend
+# ----------------------------------------------------------------------------
+
+web/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Configuration
+# ----------------------------------------------------------------------------
+
+configs/ @vishwanathdvgmm
+
+deployments/ @vishwanathdvgmm
+
+scripts/ @vishwanathdvgmm
+
+examples/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Tests
+# ----------------------------------------------------------------------------
+
+test/ @vishwanathdvgmm
+
+# ----------------------------------------------------------------------------
+# Repository Configuration
+# ----------------------------------------------------------------------------
+
+.editorconfig @vishwanathdvgmm
+
+.gitattributes @vishwanathdvgmm
+
+.gitignore @vishwanathdvgmm
+
+Makefile @vishwanathdvgmm
+
+go.mod @vishwanathdvgmm
+
+go.sum @vishwanathdvgmm
+
+README.md @vishwanathdvgmm
+
+LICENSE @vishwanathdvgmm
+
+NOTICE @vishwanathdvgmm
+
+SECURITY.md @vishwanathdvgmm
+
+CONTRIBUTING.md @vishwanathdvgmm
+
+CODE_OF_CONDUCT.md @vishwanathdvgmm
+
+CODEOWNERS @vishwanathdvgmm

@@ -157,27 +157,66 @@ BeaconLink consists of several independent services.
 
 ```
 .
+├── 📁 .github
 ├── 📁 api
+├── 📁 build
 ├── 📁 cmd
 │   ├── 📁 agent
 │   ├── 📁 api
 │   ├── 📁 beacon
-│   ├── 📁 installer
 │   └── 📁 relay
 ├── 📁 configs
 ├── 📁 deployments
+│   ├── 📁 compose
+│   ├── 📁 docker
+│   ├── 📁 kubernetes
+│   └── 📁 systemd
 ├── 📁 docs
 ├── 📁 examples
 ├── 📁 internal
+│   ├── 📁 agent
+│   ├── 📁 api
+│   ├── 📁 auth
+│   ├── 📁 config
+│   ├── 📁 deployment
+│   ├── 📁 generated
+│   ├── 📁 logging
+│   ├── 📁 metrics
+│   ├── 📁 protocol
+│   ├── 📁 relay
+│   ├── 📁 runtime
+│   ├── 📁 security
+│   ├── 📁 storage
+│   ├── 📁 telemetry
+│   └── 📁 version
+├── 📁 migrations
 ├── 📁 pkg
+│   ├── 📁 blp
+│   └── 📁 sdk
 ├── 📁 scripts
 ├── 📁 sdk
+├── 📁 tools
 ├── 📁 test
+│   ├── 📁 certificates
+│   ├── 📁 configs
+│   ├── 📁 fixtures
+│   └── 📁 golden
 ├── 📁 web
+│   ├── 📁 public
+│   ├── 📁 src
+│   ├── ⚙️ package.json
+│   └── 📄 vite.config.ts
+├── ⚙️ .editorconfig
+├── ⚙️ .gitattributes
 ├── ⚙️ .gitignore
+├── 📄 CODEOWNERS
+├── 📝 CODE_OF_CONDUCT.md
+├── 📝 CONTRIBUTING.md
 ├── 📄 LICENSE
+├── 📄 Makefile
 ├── 📄 NOTICE
 ├── 📝 README.md
+├── 📝 SECURITY.md
 └── 📄 go.mod
 ```
 
@@ -203,6 +242,7 @@ The project documentation is organized into dedicated sections.
 │   ├── 📁 11-quality
 │   ├── 📁 12-development
 │   ├── 📁 13-roadmap
+│   ├── 📁 14-engineering
 │   ├── 📁 ADR
 │   ├── 📁 RFC
 │   ├── 📁 diagrams

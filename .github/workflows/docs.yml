@@ -1,0 +1,159 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  documentation:
+    name: Validate Documentation
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Markdown Lint
+      # -----------------------------------------------------------------------
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v18
+        with:
+          globs: |
+            **/*.md
+
+      # -----------------------------------------------------------------------
+      # Markdown Links
+      # -----------------------------------------------------------------------
+
+      - name: Check Markdown links
+        uses: tcort/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "no"
+          folder-path: docs
+
+      - name: Check repository Markdown links
+        uses: tcort/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "no"
+          file-path: |
+            README.md
+            CONTRIBUTING.md
+            SECURITY.md
+            CODE_OF_CONDUCT.md
+
+      # -----------------------------------------------------------------------
+      # Required Documentation
+      # -----------------------------------------------------------------------
+
+      - name: Verify required documentation
+        run: |
+          REQUIRED_FILES=(
+            README.md
+            CONTRIBUTING.md
+            SECURITY.md
+            CODE_OF_CONDUCT.md
+            LICENSE
+          )
+
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required file: $file"
+              exit 1
+            fi
+          done
+
+      # -----------------------------------------------------------------------
+      # Documentation Structure
+      # -----------------------------------------------------------------------
+
+      - name: Verify documentation directories
+        run: |
+          REQUIRED_DIRS=(
+            docs
+            docs/00-foundation
+            docs/01-architecture
+            docs/02-networking
+            docs/03-protocol
+            docs/04-security
+            docs/05-agent
+            docs/06-relay
+            docs/07-console
+            docs/08-deployment
+            docs/09-api
+            docs/10-data
+            docs/11-quality
+            docs/12-development
+            docs/13-roadmap
+            docs/14-engineering
+            docs/ADR
+            docs/RFC
+            docs/diagrams
+          )
+
+          for dir in "${REQUIRED_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "Missing documentation directory: $dir"
+              exit 1
+            fi
+          done
+
+      # -----------------------------------------------------------------------
+      # Documentation Statistics
+      # -----------------------------------------------------------------------
+
+      - name: Documentation summary
+        run: |
+          echo "Markdown files:"
+          find . -name "*.md" | wc -l
+
+          echo ""
+          echo "Documentation directories:"
+          find docs -type d | wc -l
+
+          echo ""
+          echo "ADR documents:"
+          find docs/ADR -name "*.md" | wc -l
+
+          echo ""
+          echo "RFC documents:"
+          find docs/RFC -name "*.md" | wc -l
+
+          echo ""
+          echo "Engineering documents:"
+          find docs/14-engineering -name "*.md" | wc -l
+
+      # -----------------------------------------------------------------------
+      # Upload Logs
+      # -----------------------------------------------------------------------
+
+      - name: Upload documentation metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-summary
+          retention-days: 7
+          path: |
+            README.md
+            CONTRIBUTING.md
+            SECURITY.md
+            CODE_OF_CONDUCT.md
+            docs/

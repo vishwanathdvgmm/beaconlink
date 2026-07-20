@@ -151,6 +151,7 @@ BeaconLink consists of several major platform components.
 │   ├── 📁 11-quality
 │   ├── 📁 12-development
 │   ├── 📁 13-roadmap
+│   ├── 📁 14-engineering
 │   ├── 📁 ADR
 │   ├── 📁 RFC
 │   ├── 📁 diagrams

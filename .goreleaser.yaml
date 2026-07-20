@@ -1,0 +1,227 @@
+# ==============================================================================
+# BeaconLink
+# .goreleaser.yaml
+#
+# Documentation:
+# https://goreleaser.com/
+# ==============================================================================
+
+version: 2
+
+project_name: beaconlink
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+# ------------------------------------------------------------------------------
+# Builds
+# ------------------------------------------------------------------------------
+
+builds:
+  - id: beacon
+    main: ./cmd/beacon
+    binary: beacon
+
+    env:
+      - CGO_ENABLED=0
+
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Version={{ .Version }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Commit={{ .Commit }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Date={{ .Date }}
+
+  - id: agent
+    main: ./cmd/agent
+    binary: agent
+
+    env:
+      - CGO_ENABLED=0
+
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Version={{ .Version }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Commit={{ .Commit }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Date={{ .Date }}
+
+  - id: relay
+    main: ./cmd/relay
+    binary: relay
+
+    env:
+      - CGO_ENABLED=0
+
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Version={{ .Version }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Commit={{ .Commit }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Date={{ .Date }}
+
+  - id: api
+    main: ./cmd/api
+    binary: beacon-api
+
+    env:
+      - CGO_ENABLED=0
+
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Version={{ .Version }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Commit={{ .Commit }}
+      - -X github.com/vishwanathdvgmm/beaconlink/internal/version.Date={{ .Date }}
+
+# ------------------------------------------------------------------------------
+# Archives
+# ------------------------------------------------------------------------------
+
+archives:
+  - id: binaries
+
+    ids:
+      - beacon
+      - agent
+      - relay
+      - api
+
+    formats:
+      - tar.gz
+
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+
+    name_template: >-
+      {{ .ProjectName }}_
+      {{ .Version }}_
+      {{ .Os }}_
+      {{ .Arch }}
+
+# ------------------------------------------------------------------------------
+# Checksums
+# ------------------------------------------------------------------------------
+
+checksum:
+  name_template: checksums.txt
+
+# ------------------------------------------------------------------------------
+# Snapshot
+# ------------------------------------------------------------------------------
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+# ------------------------------------------------------------------------------
+# Changelog
+# ------------------------------------------------------------------------------
+
+changelog:
+  sort: asc
+
+  use: git
+
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^tests:"
+      - "^ci:"
+      - "^chore:"
+      - "^style:"
+      - "^refactor:"
+      - "^merge"
+
+# ------------------------------------------------------------------------------
+# Release
+# ------------------------------------------------------------------------------
+
+release:
+  draft: false
+
+  prerelease: auto
+
+  replace_existing_draft: true
+
+  footer: |
+    ## BeaconLink
+
+    Thank you for using BeaconLink.
+
+# ------------------------------------------------------------------------------
+# Source Archive
+# ------------------------------------------------------------------------------
+
+source:
+  enabled: true
+
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+
+# ------------------------------------------------------------------------------
+# SBOM
+# ------------------------------------------------------------------------------
+
+sboms:
+  - artifacts: archive
+
+# ------------------------------------------------------------------------------
+# Metadata
+# ------------------------------------------------------------------------------
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+# ------------------------------------------------------------------------------
+# Dist
+# ------------------------------------------------------------------------------
+
+dist: dist

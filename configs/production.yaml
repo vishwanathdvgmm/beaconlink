@@ -1,0 +1,39 @@
+# -----------------------------------------------------------------------------
+# BeaconLink Production Configuration
+# -----------------------------------------------------------------------------
+
+environment: production
+
+logging:
+  level: info
+  format: json
+
+telemetry:
+  enabled: true
+  metrics:
+    enabled: true
+  tracing:
+    enabled: true
+
+database:
+  host: postgres
+  port: 5432
+  name: beaconlink
+  user: beaconlink
+  password: ${DATABASE_PASSWORD}
+  sslmode: require
+
+redis:
+  address: redis:6379
+  password: ${REDIS_PASSWORD}
+  database: 0
+
+security:
+  tls:
+    enabled: true
+
+api:
+  address: 0.0.0.0:8080
+
+console:
+  address: 0.0.0.0:3000

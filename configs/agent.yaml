@@ -1,0 +1,34 @@
+# -----------------------------------------------------------------------------
+# BeaconLink Agent Configuration
+# -----------------------------------------------------------------------------
+
+agent:
+  id: ""
+
+site:
+  id: ""
+
+relay:
+  address: relay.example.com:8443
+
+authentication:
+  token: ${BEACONLINK_TOKEN}
+
+runtime:
+  default: docker
+  autoDetect: true
+
+heartbeat:
+  interval: 30s
+
+logging:
+  level: info
+  format: json
+
+telemetry:
+  enabled: true
+
+security:
+  tls:
+    enabled: true
+    insecureSkipVerify: false

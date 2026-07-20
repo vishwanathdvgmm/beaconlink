@@ -1,0 +1,95 @@
+name: Stale Issues and Pull Requests
+
+on:
+  schedule:
+    # Every day at 02:00 UTC
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark Stale Items
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mark stale issues and pull requests
+        uses: actions/stale@v9
+        with:
+          # --------------------------------------------------------------------
+          # General
+          # --------------------------------------------------------------------
+
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          operations-per-run: 200
+
+          ascending: true
+
+          # --------------------------------------------------------------------
+          # Issues
+          # --------------------------------------------------------------------
+
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+
+          stale-issue-label: stale
+
+          stale-issue-message: >
+            This issue has had no activity for 60 days and has been marked as
+            stale. If there is still work to be done, comment or update the
+            issue and the stale label will be removed automatically.
+            Otherwise, it will be closed in 14 days.
+
+          close-issue-message: >
+            Closing this issue due to prolonged inactivity. It can be reopened
+            if additional information or work becomes available.
+
+          # --------------------------------------------------------------------
+          # Pull Requests
+          # --------------------------------------------------------------------
+
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+
+          stale-pr-label: stale
+
+          stale-pr-message: >
+            This pull request has had no activity for 30 days and has been
+            marked as stale. Please update it or leave a comment to keep it
+            active.
+
+          close-pr-message: >
+            Closing this pull request due to inactivity.
+
+          # --------------------------------------------------------------------
+          # Exempt Labels
+          # --------------------------------------------------------------------
+
+          exempt-issue-labels: >
+            pinned,
+            security,
+            roadmap,
+            discussion,
+            help wanted,
+            good first issue
+
+          exempt-pr-labels: >
+            work in progress,
+            do not merge,
+            dependencies
+
+          # --------------------------------------------------------------------
+          # Behavior
+          # --------------------------------------------------------------------
+
+          remove-stale-when-updated: true
+
+          delete-branch: false
+
+          close-issue-reason: not_planned

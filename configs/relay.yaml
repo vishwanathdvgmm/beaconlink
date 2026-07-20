@@ -1,0 +1,37 @@
+# -----------------------------------------------------------------------------
+# BeaconLink Relay Configuration
+# -----------------------------------------------------------------------------
+
+relay:
+  name: relay-01
+
+server:
+  address: 0.0.0.0:8443
+
+tls:
+  enabled: true
+  certificate: /etc/beaconlink/tls/tls.crt
+  privateKey: /etc/beaconlink/tls/tls.key
+
+storage:
+  database:
+    host: postgres
+    port: 5432
+    name: beaconlink
+    user: beaconlink
+    password: ${DATABASE_PASSWORD}
+
+redis:
+  address: redis:6379
+  password: ${REDIS_PASSWORD}
+
+logging:
+  level: info
+  format: json
+
+telemetry:
+  enabled: true
+
+limits:
+  maxConnections: 10000
+  idleTimeout: 5m

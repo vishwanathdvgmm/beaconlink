@@ -1,0 +1,39 @@
+# -----------------------------------------------------------------------------
+# BeaconLink Development Configuration
+# -----------------------------------------------------------------------------
+
+environment: development
+
+logging:
+  level: debug
+  format: text
+
+telemetry:
+  enabled: true
+  metrics:
+    enabled: true
+  tracing:
+    enabled: false
+
+database:
+  host: localhost
+  port: 5432
+  name: beaconlink
+  user: beaconlink
+  password: beaconlink1721
+  sslmode: disable
+
+redis:
+  address: localhost:6379
+  password: ""
+  database: 0
+
+security:
+  tls:
+    enabled: false
+
+api:
+  address: 127.0.0.1:8080
+
+console:
+  address: 127.0.0.1:3000

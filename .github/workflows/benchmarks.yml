@@ -1,0 +1,112 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Every Sunday at 04:00 UTC
+    - cron: "0 4 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.25"
+
+jobs:
+  benchmark:
+    name: Go Benchmarks
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Verify modules
+        run: go mod verify
+
+      # ----------------------------------------------------------------------
+      # Run Benchmarks
+      # ----------------------------------------------------------------------
+
+      - name: Execute benchmarks
+        run: |
+          mkdir -p benchmark-results
+
+          go test \
+            -run=^$ \
+            -bench=. \
+            -benchmem \
+            -count=5 \
+            ./... | tee benchmark-results/benchmarks.txt
+
+      # ----------------------------------------------------------------------
+      # CPU Profile
+      # ----------------------------------------------------------------------
+
+      - name: Generate CPU profile
+        run: |
+          mkdir -p benchmark-results
+
+          go test \
+            -run=^$ \
+            -bench=. \
+            -cpuprofile=benchmark-results/cpu.prof \
+            ./... || true
+
+      # ----------------------------------------------------------------------
+      # Memory Profile
+      # ----------------------------------------------------------------------
+
+      - name: Generate memory profile
+        run: |
+          mkdir -p benchmark-results
+
+          go test \
+            -run=^$ \
+            -bench=. \
+            -memprofile=benchmark-results/mem.prof \
+            ./... || true
+
+      # ----------------------------------------------------------------------
+      # Upload Results
+      # ----------------------------------------------------------------------
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          retention-days: 30
+          path: benchmark-results/
+
+      # ----------------------------------------------------------------------
+      # Summary
+      # ----------------------------------------------------------------------
+
+      - name: Benchmark summary
+        run: |
+          echo "## Benchmark Run" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Go Version: ${{ env.GO_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Benchmark Count: 5" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory Statistics: Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- CPU Profile: Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory Profile: Generated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Benchmark artifacts are available for download." >> $GITHUB_STEP_SUMMARY
